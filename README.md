@@ -46,10 +46,17 @@ npm install
 
 ---
 
-### Step 5 — Get your Pokémon TCG API key
+### Step 5 — Pokémon TCG API key (optional)
+The Pokémon TCG API works without an API key. You can skip this step entirely and the app will still function — you just get a lower rate limit (100 requests/day vs 20,000/day with a key).
+
+**To use it without a key:** leave `POKEMON_TCG_API_KEY` out of your `.env.local` file entirely.
+
+**If you do want a key later:**
 1. Go to [pokemontcg.io](https://pokemontcg.io)
 2. Click **Sign Up** and create an account
 3. After logging in, go to your dashboard and copy your **API Key**
+
+> For local development and testing, skipping the key is the easiest option.
 
 ---
 
@@ -65,10 +72,10 @@ touch .env.local
 Open `.env.local` and add the following:
 ```env
 ANTHROPIC_API_KEY=sk-ant-your-key-here
-POKEMON_TCG_API_KEY=your-pokemon-tcg-key-here
+# POKEMON_TCG_API_KEY=your-pokemon-tcg-key-here  ← optional, remove the # if you have one
 ```
 
-Replace the placeholder values with your actual keys.
+Only `ANTHROPIC_API_KEY` is required. The Pokémon TCG key can be left out.
 
 ---
 
