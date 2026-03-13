@@ -9,31 +9,31 @@
 
 const cards = [
   {
-    src: '/cards/charizard-1.jpg',
+    src: '/cards/charizard-1.jpg.webp',
     label: '1999 Base Set Holo',
     grade: 'PSA 10',
     set: '#4/102',
   },
   {
-    src: '/cards/charizard-2.jpg',
+    src: '/cards/charizard-2.jpg.webp',
     label: '2004 Charizard ex Holo',
     grade: 'PSA 10',
     set: 'Fire Red Leaf Green #105',
   },
   {
-    src: '/cards/charizard-3.jpg',
+    src: '/cards/charizard-3.jpg.webp',
     label: '2006 Gold Star Holo',
     grade: 'PSA 10',
     set: 'EX Dragon Frontiers #100',
   },
   {
-    src: '/cards/charizard-4.jpg',
+    src: '/cards/charizard-4.jpg.webp',
     label: '2014 M Charizard EX',
     grade: 'PSA 10',
     set: 'Flashfire #69',
   },
   {
-    src: '/cards/charizard-5.jpg',
+    src: '/cards/charizard-5.jpg.webp',
     label: '2024 Charizard ex SIR',
     grade: 'PSA 9',
     set: 'PAF EN #234',
