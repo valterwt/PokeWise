@@ -1,4 +1,6 @@
-@import "tailwindcss";
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
 
 :root {
   --background: #0a0a0a;
@@ -7,11 +9,6 @@
   --yellow: #ffd700;
   --card-bg: #141414;
   --border: #2a2a2a;
-}
-
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
 }
 
 * {
