@@ -50,12 +50,12 @@ export default function CharizardCarousel() {
                 style={{ background: 'linear-gradient(180deg, #1a2040 0%, #111828 100%)' }}
               >
                 {/* Card image */}
-                <div className="relative w-full aspect-[2.5/3.5] bg-[#0d1120]">
+                <div className="relative w-full aspect-[3/4] bg-[#0d1120]">
                   {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img
                     src={card.src}
                     alt={card.label}
-                    className="w-full h-full object-cover"
+                    className="w-full h-full object-contain object-top"
                     style={{ imageRendering: 'auto' }}
                     onError={(e) => {
                       const target = e.currentTarget as HTMLImageElement
