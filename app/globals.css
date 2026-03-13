@@ -1,12 +1,17 @@
 @import "tailwindcss";
 
 :root {
-  --background: #0a0a0a;
-  --foreground: #f0f0f0;
-  --red: #e63946;
-  --yellow: #ffd700;
-  --card-bg: #141414;
-  --border: #2a2a2a;
+  --background: #0b0f1e;
+  --foreground: #dfe7ff;
+  --accent: #7cc6ff;
+  --accent-purple: #a78bfa;
+  --card-bg: #131729;
+  --card-bg-2: #0e1223;
+  --border: rgba(255, 255, 255, 0.09);
+  --border-strong: rgba(255, 255, 255, 0.16);
+  --muted: #9fb0ff;
+  --yellow: #fbbf24;
+  --red: #f87171;
 }
 
 * {
@@ -25,8 +30,8 @@ body {
 
 /* Grade glow effects */
 .grade-glow-gold {
-  box-shadow: 0 0 20px rgba(255, 215, 0, 0.5), 0 0 40px rgba(255, 215, 0, 0.2);
-  border-color: #ffd700 !important;
+  box-shadow: 0 0 20px rgba(251, 191, 36, 0.5), 0 0 40px rgba(251, 191, 36, 0.2);
+  border-color: #fbbf24 !important;
 }
 
 .grade-glow-green {
@@ -40,8 +45,20 @@ body {
 }
 
 .grade-glow-red {
-  box-shadow: 0 0 20px rgba(230, 57, 70, 0.5), 0 0 40px rgba(230, 57, 70, 0.2);
-  border-color: #e63946 !important;
+  box-shadow: 0 0 20px rgba(248, 113, 113, 0.5), 0 0 40px rgba(248, 113, 113, 0.2);
+  border-color: #f87171 !important;
+}
+
+/* Carousel scroll animation */
+@keyframes carousel-scroll {
+  0%   { transform: translateX(0); }
+  100% { transform: translateX(-50%); }
+}
+.carousel-track {
+  animation: carousel-scroll 30s linear infinite;
+}
+.carousel-track:hover {
+  animation-play-state: paused;
 }
 
 /* Scrollbar */
@@ -50,14 +67,14 @@ body {
 }
 
 ::-webkit-scrollbar-track {
-  background: #111;
+  background: #0b0f1e;
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #333;
+  background: rgba(124, 198, 255, 0.25);
   border-radius: 3px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: #555;
+  background: rgba(124, 198, 255, 0.45);
 }

@@ -1,5 +1,6 @@
 import Link from 'next/link'
 import GradeBadge from '@/components/GradeBadge'
+import CharizardCarousel from '@/components/CharizardCarousel'
 
 const features = [
   {
@@ -88,39 +89,59 @@ const faqs = [
 export default function HomePage() {
   return (
     <div className="min-h-screen">
-      {/* Hero */}
+      {/* ── Hero ─────────────────────────────────────────────────────────── */}
       <section className="relative overflow-hidden px-4 pt-16 pb-24 md:pt-24 md:pb-32">
+        {/* Soft glow blobs */}
         <div className="absolute inset-0 overflow-hidden pointer-events-none">
-          <div className="absolute top-1/4 left-1/2 -translate-x-1/2 w-[600px] h-[600px] bg-[#e63946]/5 rounded-full blur-3xl" />
-          <div className="absolute top-1/3 left-1/3 w-[400px] h-[400px] bg-[#ffd700]/5 rounded-full blur-3xl" />
+          <div className="absolute top-1/4 left-1/2 -translate-x-1/2 w-[700px] h-[500px] rounded-full blur-3xl"
+            style={{ background: 'rgba(124,198,255,0.06)' }} />
+          <div className="absolute top-1/3 left-1/3 w-[400px] h-[400px] rounded-full blur-3xl"
+            style={{ background: 'rgba(167,139,250,0.05)' }} />
         </div>
 
         <div className="relative max-w-5xl mx-auto text-center">
-          <div className="inline-flex items-center gap-2 bg-[#ffd700]/10 border border-[#ffd700]/20 text-[#ffd700] text-sm font-medium px-4 py-2 rounded-full mb-8">
+          <div className="inline-flex items-center gap-2 text-sm font-medium px-4 py-2 rounded-full mb-8"
+            style={{
+              background: 'rgba(124,198,255,0.08)',
+              border: '1px solid rgba(124,198,255,0.2)',
+              color: '#7cc6ff',
+            }}>
             <span>⚡</span> AI Pokémon Card Grading is here
           </div>
 
-          <h1 className="text-4xl md:text-6xl lg:text-7xl font-black leading-tight mb-6">
+          <h1 className="text-4xl md:text-6xl lg:text-7xl font-black leading-tight mb-6"
+            style={{ color: '#dfe7ff' }}>
             AI Pokémon Card Grading<br />
-            <span className="text-[#e63946]">Instant.</span>{' '}
-            <span className="text-[#ffd700]">Accurate.</span>{' '}
-            <span className="bg-gradient-to-r from-white to-gray-400 bg-clip-text text-transparent">Animated.</span>
+            <span style={{ color: '#7cc6ff' }}>Instant.</span>{' '}
+            <span style={{ color: '#a78bfa' }}>Accurate.</span>{' '}
+            <span style={{ background: 'linear-gradient(90deg, #dfe7ff, #9fb0ff)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>Animated.</span>
           </h1>
 
-          <p className="text-lg md:text-xl text-gray-400 max-w-2xl mx-auto mb-10 leading-relaxed">
+          <p className="text-lg md:text-xl max-w-2xl mx-auto mb-10 leading-relaxed"
+            style={{ color: '#9fb0ff' }}>
             Upload your Pokémon card and get a professional PSA-style grade in seconds. Watch a pack open to reveal your score. Build your digital binder. Join the community.
           </p>
 
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Link
               href="/grade"
-              className="px-8 py-4 bg-[#e63946] hover:bg-[#c1121f] text-white font-bold text-lg rounded-xl transition-all hover:scale-105 hover:shadow-[0_0_30px_rgba(230,57,70,0.4)]"
+              className="px-8 py-4 font-bold text-lg rounded-xl transition-all hover:scale-105"
+              style={{
+                background: 'linear-gradient(135deg, #7cc6ff, #a78bfa)',
+                color: '#0b0f1e',
+                boxShadow: '0 0 32px rgba(124,198,255,0.35)',
+              }}
             >
               Grade Your First Card Free ⚡
             </Link>
             <Link
               href="/leaderboards"
-              className="px-8 py-4 bg-white/5 hover:bg-white/10 border border-white/10 text-white font-semibold text-lg rounded-xl transition-colors"
+              className="px-8 py-4 font-semibold text-lg rounded-xl transition-colors"
+              style={{
+                background: 'rgba(255,255,255,0.04)',
+                border: '1px solid rgba(255,255,255,0.1)',
+                color: '#dfe7ff',
+              }}
             >
               View Community Grades
             </Link>
@@ -129,37 +150,49 @@ export default function HomePage() {
           <div className="flex flex-wrap justify-center gap-8 mt-16 text-center">
             {[
               { value: '50,000+', label: 'Cards Graded' },
-              { value: '1–10', label: 'PSA-Style Scale' },
-              { value: '< 30s', label: 'Average Grade Time' },
-              { value: 'Free', label: 'First Grade' },
+              { value: '1–10',    label: 'PSA-Style Scale' },
+              { value: '< 30s',   label: 'Average Grade Time' },
+              { value: 'Free',    label: 'First Grade' },
             ].map((stat) => (
               <div key={stat.label}>
-                <div className="text-2xl md:text-3xl font-black text-[#ffd700]">{stat.value}</div>
-                <div className="text-sm text-gray-500 mt-1">{stat.label}</div>
+                <div className="text-2xl md:text-3xl font-black" style={{ color: '#7cc6ff' }}>{stat.value}</div>
+                <div className="text-sm mt-1" style={{ color: 'rgba(159,176,255,0.6)' }}>{stat.label}</div>
               </div>
             ))}
           </div>
         </div>
       </section>
 
-      {/* How it works */}
-      <section className="px-4 py-20 border-t border-[#1e1e1e]">
+      {/* ── Charizard Carousel ───────────────────────────────────────────── */}
+      <div style={{ borderTop: '1px solid rgba(255,255,255,0.06)', background: 'rgba(19,23,41,0.6)' }}>
+        <CharizardCarousel />
+      </div>
+
+      {/* ── How It Works ─────────────────────────────────────────────────── */}
+      <section className="px-4 py-20" style={{ borderTop: '1px solid rgba(255,255,255,0.06)' }}>
         <div className="max-w-5xl mx-auto">
           <div className="text-center mb-14">
-            <h2 className="text-3xl md:text-4xl font-black mb-4">How It Works</h2>
-            <p className="text-gray-400 text-lg">Three steps from photo to grade.</p>
+            <h2 className="text-3xl md:text-4xl font-black mb-4" style={{ color: '#dfe7ff' }}>How It Works</h2>
+            <p className="text-lg" style={{ color: '#9fb0ff' }}>Three steps from photo to grade.</p>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             {steps.map((step, i) => (
               <div key={i} className="relative">
-                <div className="bg-[#141414] border border-[#1e1e1e] rounded-2xl p-8 h-full hover:border-[#333] transition-colors">
+                <div
+                  className="rounded-2xl p-8 h-full transition-all hover:-translate-y-1"
+                  style={{
+                    background: 'rgba(19,23,41,0.7)',
+                    border: '1px solid rgba(255,255,255,0.08)',
+                    backdropFilter: 'blur(4px)',
+                  }}
+                >
                   <div className="text-4xl mb-4">{step.icon}</div>
-                  <div className="text-[#e63946] text-sm font-bold mb-2">{step.number}</div>
-                  <h3 className="text-xl font-bold mb-3">{step.title}</h3>
-                  <p className="text-gray-400 leading-relaxed">{step.description}</p>
+                  <div className="text-sm font-bold mb-2" style={{ color: '#7cc6ff' }}>{step.number}</div>
+                  <h3 className="text-xl font-bold mb-3" style={{ color: '#dfe7ff' }}>{step.title}</h3>
+                  <p className="leading-relaxed" style={{ color: '#9fb0ff' }}>{step.description}</p>
                 </div>
                 {i < steps.length - 1 && (
-                  <div className="hidden md:block absolute top-1/2 -right-4 text-gray-600 text-2xl z-10">→</div>
+                  <div className="hidden md:block absolute top-1/2 -right-4 text-2xl z-10" style={{ color: 'rgba(124,198,255,0.4)' }}>→</div>
                 )}
               </div>
             ))}
@@ -167,89 +200,117 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* Community Grades */}
-      <section className="px-4 py-20 border-t border-[#1e1e1e] bg-[#0d0d0d]">
+      {/* ── Community Grades ─────────────────────────────────────────────── */}
+      <section className="px-4 py-20" style={{ borderTop: '1px solid rgba(255,255,255,0.06)', background: 'rgba(14,18,35,0.5)' }}>
         <div className="max-w-5xl mx-auto">
           <div className="text-center mb-14">
-            <h2 className="text-3xl md:text-4xl font-black mb-4">Community Grades</h2>
-            <p className="text-gray-400 text-lg">Real cards graded by real collectors.</p>
+            <h2 className="text-3xl md:text-4xl font-black mb-4" style={{ color: '#dfe7ff' }}>Community Grades</h2>
+            <p className="text-lg" style={{ color: '#9fb0ff' }}>Real cards graded by real collectors.</p>
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
             {testimonials.map((t, i) => (
               <div
                 key={i}
-                className={`bg-[#141414] rounded-2xl p-5 border-2 transition-all hover:-translate-y-1 ${
-                  t.grade >= 9 ? 'border-[#ffd700]/40 grade-glow-gold' :
-                  t.grade >= 7 ? 'border-green-500/40 grade-glow-green' :
-                  t.grade >= 5 ? 'border-yellow-500/40 grade-glow-yellow' :
-                  'border-red-600/40 grade-glow-red'
+                className={`rounded-2xl p-5 border-2 transition-all hover:-translate-y-1 ${
+                  t.grade >= 9 ? 'grade-glow-gold' :
+                  t.grade >= 7 ? 'grade-glow-green' :
+                  t.grade >= 5 ? 'grade-glow-yellow' :
+                  'grade-glow-red'
                 }`}
+                style={{ background: 'rgba(19,23,41,0.8)', backdropFilter: 'blur(6px)' }}
               >
                 <div className="flex justify-between items-start mb-4">
-                  <div className="w-16 h-20 bg-[#1a1a1a] rounded-lg flex items-center justify-center text-3xl border border-[#2a2a2a]">
+                  <div className="w-16 h-20 rounded-lg flex items-center justify-center text-3xl"
+                    style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)' }}>
                     🎴
                   </div>
                   <GradeBadge grade={t.grade} size="lg" />
                 </div>
-                <h3 className="font-bold text-sm mb-1">{t.card}</h3>
-                <p className="text-gray-500 text-xs mb-3">{t.summary}</p>
-                <div className="text-gray-600 text-xs">by @{t.username}</div>
+                <h3 className="font-bold text-sm mb-1" style={{ color: '#dfe7ff' }}>{t.card}</h3>
+                <p className="text-xs mb-3" style={{ color: '#9fb0ff' }}>{t.summary}</p>
+                <div className="text-xs" style={{ color: 'rgba(159,176,255,0.5)' }}>by @{t.username}</div>
               </div>
             ))}
           </div>
         </div>
       </section>
 
-      {/* Features */}
-      <section className="px-4 py-20 border-t border-[#1e1e1e]">
+      {/* ── Features ─────────────────────────────────────────────────────── */}
+      <section className="px-4 py-20" style={{ borderTop: '1px solid rgba(255,255,255,0.06)' }}>
         <div className="max-w-5xl mx-auto">
           <div className="text-center mb-14">
-            <h2 className="text-3xl md:text-4xl font-black mb-4">Everything You Need</h2>
-            <p className="text-gray-400 text-lg">Built for Pokémon collectors, by collectors.</p>
+            <h2 className="text-3xl md:text-4xl font-black mb-4" style={{ color: '#dfe7ff' }}>Everything You Need</h2>
+            <p className="text-lg" style={{ color: '#9fb0ff' }}>Built for Pokémon collectors, by collectors.</p>
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
             {features.map((f, i) => (
-              <div key={i} className="bg-[#141414] border border-[#1e1e1e] rounded-2xl p-6 hover:border-[#2a2a2a] transition-colors">
+              <div
+                key={i}
+                className="rounded-2xl p-6 transition-all hover:-translate-y-1"
+                style={{
+                  background: 'rgba(19,23,41,0.7)',
+                  border: '1px solid rgba(255,255,255,0.07)',
+                  backdropFilter: 'blur(4px)',
+                }}
+              >
                 <div className="text-3xl mb-3">{f.icon}</div>
-                <h3 className="font-bold text-lg mb-2">{f.title}</h3>
-                <p className="text-gray-400 text-sm leading-relaxed">{f.description}</p>
+                <h3 className="font-bold text-lg mb-2" style={{ color: '#dfe7ff' }}>{f.title}</h3>
+                <p className="text-sm leading-relaxed" style={{ color: '#9fb0ff' }}>{f.description}</p>
               </div>
             ))}
           </div>
         </div>
       </section>
 
-      {/* CTA Banner */}
-      <section className="px-4 py-20 border-t border-[#1e1e1e] bg-gradient-to-r from-[#e63946]/10 via-[#0a0a0a] to-[#ffd700]/10">
+      {/* ── CTA Banner ───────────────────────────────────────────────────── */}
+      <section
+        className="px-4 py-20"
+        style={{
+          borderTop: '1px solid rgba(255,255,255,0.06)',
+          background: 'linear-gradient(135deg, rgba(124,198,255,0.07) 0%, rgba(11,15,30,0) 50%, rgba(167,139,250,0.07) 100%)',
+        }}
+      >
         <div className="max-w-3xl mx-auto text-center">
-          <h2 className="text-3xl md:text-4xl font-black mb-4">Ready to grade your collection?</h2>
-          <p className="text-gray-400 text-lg mb-8">Join thousands of collectors who use PokeWise to track, grade, and showcase their cards.</p>
+          <h2 className="text-3xl md:text-4xl font-black mb-4" style={{ color: '#dfe7ff' }}>Ready to grade your collection?</h2>
+          <p className="text-lg mb-8" style={{ color: '#9fb0ff' }}>Join thousands of collectors who use PokeWise to track, grade, and showcase their cards.</p>
           <Link
             href="/grade"
-            className="inline-block px-10 py-5 bg-[#e63946] hover:bg-[#c1121f] text-white font-bold text-xl rounded-xl transition-all hover:scale-105 hover:shadow-[0_0_40px_rgba(230,57,70,0.5)]"
+            className="inline-block px-10 py-5 font-bold text-xl rounded-xl transition-all hover:scale-105"
+            style={{
+              background: 'linear-gradient(135deg, #7cc6ff, #a78bfa)',
+              color: '#0b0f1e',
+              boxShadow: '0 0 40px rgba(124,198,255,0.4)',
+            }}
           >
             Grade Your First Card Free ⚡
           </Link>
         </div>
       </section>
 
-      {/* FAQ */}
-      <section className="px-4 py-20 border-t border-[#1e1e1e]">
+      {/* ── FAQ ──────────────────────────────────────────────────────────── */}
+      <section className="px-4 py-20" style={{ borderTop: '1px solid rgba(255,255,255,0.06)' }}>
         <div className="max-w-3xl mx-auto">
           <div className="text-center mb-14">
-            <h2 className="text-3xl md:text-4xl font-black mb-4">Frequently Asked Questions</h2>
+            <h2 className="text-3xl md:text-4xl font-black mb-4" style={{ color: '#dfe7ff' }}>Frequently Asked Questions</h2>
           </div>
           <div className="space-y-4">
             {faqs.map((faq, i) => (
               <details
                 key={i}
-                className="group bg-[#141414] border border-[#1e1e1e] rounded-xl overflow-hidden hover:border-[#2a2a2a] transition-colors"
+                className="group rounded-xl overflow-hidden"
+                style={{
+                  background: 'rgba(19,23,41,0.7)',
+                  border: '1px solid rgba(255,255,255,0.07)',
+                  backdropFilter: 'blur(4px)',
+                }}
               >
-                <summary className="px-6 py-4 cursor-pointer font-semibold flex justify-between items-center list-none">
+                <summary className="px-6 py-4 cursor-pointer font-semibold flex justify-between items-center list-none"
+                  style={{ color: '#dfe7ff' }}>
                   {faq.q}
-                  <span className="text-gray-500 group-open:rotate-180 transition-transform">▼</span>
+                  <span className="group-open:rotate-180 transition-transform" style={{ color: '#7cc6ff' }}>▼</span>
                 </summary>
-                <div className="px-6 pb-5 text-gray-400 leading-relaxed border-t border-[#1e1e1e] pt-4">
+                <div className="px-6 pb-5 leading-relaxed pt-4"
+                  style={{ color: '#9fb0ff', borderTop: '1px solid rgba(255,255,255,0.06)' }}>
                   {faq.a}
                 </div>
               </details>
