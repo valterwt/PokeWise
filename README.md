@@ -100,30 +100,79 @@ Once the app loads:
 
 ---
 
-### Step 11 — Submit a Pokémon card for grading
+### Step 11 — Navigate to Restoring Cards Daily
+From the main navigation, click **Restoring Cards Daily**.
+
+This section is your day-to-day hub for card restoration — a living log of techniques, experiments, and honest results from real restorers in the community.
+
+---
+
+### Step 12 — Subscribe to the Weekly Letter
+The **Weekly Letter** is a curated digest sent every week covering everything that happened in the Restoring Cards Daily section that week.
+
+To subscribe:
+1. Click **Subscribe to Weekly Letter** on the Restoring Cards Daily page
+2. Enter your email address
+3. Choose your digest preference — **Full** (everything) or **Highlights only**
+4. Click **Subscribe**
+
+You will receive your first letter at the end of the current week.
+
+---
+
+### Step 13 — Read this week's letter
+Each weekly letter is also published on-site so you can browse past issues without needing to be subscribed.
+
+From the Restoring Cards Daily page:
+1. Click **Weekly Letters** in the sidebar
+2. Select the current week's issue (shown at the top)
+3. Each letter is broken into sections:
+
+| Section | What it covers |
+|---|---|
+| **This Week's Topic** | The focused restoration method or card type the community worked on |
+| **New Methods Tried** | Techniques tested for the first time — what was used and how |
+| **Results & Grades** | Before/after comparisons with AI grading scores |
+| **Failures & Lessons** | Honest write-ups of what didn't work and why |
+| **Community Picks** | Top restorations voted on by the community this week |
+| **Next Week's Focus** | A preview of the upcoming topic so you can prepare |
+
+---
+
+### Step 14 — Log your own restoration
+1. On the Restoring Cards Daily page, click **Log a Restoration**
+2. Upload before and after photos of your card
+3. Fill in:
+   - **Method used** (e.g. steam treatment, surface clean, sleeve press)
+   - **Products used** (brands, tools)
+   - **Time taken**
+   - **Your notes** — what worked, what didn't, what you'd do differently
+4. Click **Submit** — your log will be reviewed and may be featured in that week's letter
+
+---
+
+### Step 15 — Submit a Pokémon card for AI grading
 1. From the home page, click **Grade a Card**
 2. Search for your card by name (e.g. `Charizard`) or upload an image
 3. Select the correct card from the results
 4. Click **Submit for Grading**
 
----
-
-### Step 12 — View the AI grading results
-After submission, the AI will analyze your card and return:
+The AI will return:
 - **Condition grade** (e.g. Mint, Near Mint, Lightly Played)
 - **Estimated value range**
 - **Detailed notes** on wear, centering, and surface quality
 
 ---
 
-### Step 13 — Explore the community
-- Browse other users' graded cards in the **Community Feed**
-- Follow collectors and comment on submissions
+### Step 16 — Explore the community
+- Browse other users' graded and restored cards in the **Community Feed**
+- Follow collectors and restoration enthusiasts
+- Comment on logs and weekly letters
 - Compare your collection with the community leaderboard
 
 ---
 
-### Step 14 — Add cards to your collection
+### Step 17 — Add cards to your collection
 1. After grading, click **Add to Collection**
 2. Your card will appear in your personal **Collection** page
 3. Track your collection's total estimated value over time
