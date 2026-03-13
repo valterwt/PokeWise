@@ -8,40 +8,15 @@
 //   charizard-5.jpg  → 2024 Charizard ex PAF Special Illustration Rare (PSA 9)
 
 const cards = [
-  {
-    src: '/cards/charizard-1.jpg.webp',
-    label: '1999 Base Set Holo',
-    grade: 'PSA 10',
-    set: '#4/102',
-  },
-  {
-    src: '/cards/charizard-2.jpg.webp',
-    label: '2004 Charizard ex Holo',
-    grade: 'PSA 10',
-    set: 'Fire Red Leaf Green #105',
-  },
-  {
-    src: '/cards/charizard-3.jpg.webp',
-    label: '2006 Gold Star Holo',
-    grade: 'PSA 10',
-    set: 'EX Dragon Frontiers #100',
-  },
-  {
-    src: '/cards/charizard-4.jpg.webp',
-    label: '2014 M Charizard EX',
-    grade: 'PSA 10',
-    set: 'Flashfire #69',
-  },
-  {
-    src: '/cards/charizard-5.jpg.webp',
-    label: '2024 Charizard ex SIR',
-    grade: 'PSA 9',
-    set: 'PAF EN #234',
-  },
+  { src: '/cards/charizard-1.jpg.webp', label: '1999 Base Set Holo', set: '#4/102' },
+  { src: '/cards/charizard-2.jpg.webp', label: '2004 Charizard ex Holo', set: 'Fire Red Leaf Green #105' },
+  { src: '/cards/charizard-3.jpg.webp', label: '2006 Gold Star Holo', set: 'EX Dragon Frontiers #100' },
+  { src: '/cards/charizard-4.jpg.webp', label: '2014 M Charizard EX', set: 'Flashfire #69' },
+  { src: '/cards/charizard-5.jpg.webp', label: '2024 Charizard ex SIR', set: 'PAF EN #234' },
 ]
 
-// Duplicate for a seamless infinite loop
-const track = [...cards, ...cards]
+// Triple the set so there's always overflow on both sides for a seamless loop
+const track = [...cards, ...cards, ...cards]
 
 export default function CharizardCarousel() {
   return (
@@ -59,14 +34,10 @@ export default function CharizardCarousel() {
         <p className="text-[#9fb0ff] text-lg">25 years of the most graded card in the hobby</p>
       </div>
 
-      {/* Carousel track — no padding so cards extend to full width */}
+      {/* Carousel track */}
       <div className="flex carousel-track gap-6" style={{ width: 'max-content' }}>
         {track.map((card, i) => (
-          <div
-            key={i}
-            className="flex-shrink-0 w-52 group cursor-pointer"
-          >
-            {/* PSA slab outer shell */}
+          <div key={i} className="flex-shrink-0 w-52 group cursor-pointer">
             <div
               className="rounded-2xl p-[3px] transition-transform duration-300 group-hover:-translate-y-3 group-hover:scale-105"
               style={{
@@ -78,13 +49,6 @@ export default function CharizardCarousel() {
                 className="rounded-[14px] overflow-hidden"
                 style={{ background: 'linear-gradient(180deg, #1a2040 0%, #111828 100%)' }}
               >
-                {/* PSA label bar */}
-                <div className="px-3 py-1.5 flex justify-between items-center"
-                  style={{ background: 'rgba(124,198,255,0.08)', borderBottom: '1px solid rgba(124,198,255,0.12)' }}>
-                  <span className="text-[10px] font-bold text-[#7cc6ff] tracking-widest uppercase">PSA</span>
-                  <span className="text-[10px] font-black text-[#fbbf24]">{card.grade}</span>
-                </div>
-
                 {/* Card image */}
                 <div className="relative w-full aspect-[2.5/3.5] bg-[#0d1120]">
                   {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -94,7 +58,6 @@ export default function CharizardCarousel() {
                     className="w-full h-full object-cover"
                     style={{ imageRendering: 'auto' }}
                     onError={(e) => {
-                      // Fallback placeholder when image isn't added yet
                       const target = e.currentTarget as HTMLImageElement
                       target.style.display = 'none'
                       const parent = target.parentElement!
@@ -104,7 +67,7 @@ export default function CharizardCarousel() {
                   />
                 </div>
 
-                {/* Card footer */}
+                {/* Card footer — label + set only, grade is visible on the card image */}
                 <div className="px-3 py-2">
                   <div className="text-[11px] font-bold text-[#dfe7ff] leading-tight truncate">{card.label}</div>
                   <div className="text-[10px] text-[#9fb0ff] mt-0.5 truncate">{card.set}</div>
