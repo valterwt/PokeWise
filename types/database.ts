@@ -48,6 +48,16 @@ export type Subscriber = {
   subscribed_at: string
 }
 
+export type UserCredits = {
+  user_id: string
+  free_grades_used: number
+  paid_credits: number
+  stripe_customer_id: string | null
+  stripe_subscription_id: string | null
+  subscription_status: 'none' | 'active' | 'cancelled'
+  updated_at: string
+}
+
 export type GradeResult = {
   grade: number
   centering: number

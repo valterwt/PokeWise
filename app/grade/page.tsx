@@ -176,6 +176,11 @@ export default function GradePage() {
     try {
       const res = await fetch('/api/grade', { method: 'POST', body: formData })
       const data = await res.json()
+      if (res.status === 402) {
+        // Out of free grades — redirect to pricing
+        window.location.href = `/pricing?upgrade=1`
+        return
+      }
       if (!res.ok) throw new Error(data.error || 'Grading failed')
       setGradeResult(data)
       setStep('animating')

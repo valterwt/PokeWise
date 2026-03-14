@@ -91,6 +91,78 @@ alter table public.subscribers enable row level security;
 create policy "Subscribers can insert own email" on public.subscribers
   for insert with check (true);
 
+-- User credits / subscription table
+create table if not exists public.user_credits (
+  user_id               uuid references public.users(id) on delete cascade primary key,
+  free_grades_used      int  default 0 not null,
+  paid_credits          int  default 0 not null,
+  stripe_customer_id    text,
+  stripe_subscription_id text,
+  subscription_status   text default 'none' not null, -- 'none' | 'active' | 'cancelled'
+  updated_at            timestamptz default now() not null
+);
+
+alter table public.user_credits enable row level security;
+
+create policy "Users can view own credits" on public.user_credits
+  for select using (auth.uid() = user_id);
+
+create policy "Service role can manage credits" on public.user_credits
+  for all using (true);
+
+-- RPC: atomically add paid credits
+create or replace function add_grade_credits(p_user_id uuid, p_credits int)
+returns void language plpgsql security definer as $$
+begin
+  insert into public.user_credits (user_id, paid_credits)
+  values (p_user_id, p_credits)
+  on conflict (user_id) do update
+    set paid_credits = public.user_credits.paid_credits + p_credits,
+        updated_at   = now();
+end;
+$$;
+
+-- RPC: consume one grade credit (returns false if no credits available)
+create or replace function consume_grade_credit(p_user_id uuid)
+returns boolean language plpgsql security definer as $$
+declare
+  v_row public.user_credits%rowtype;
+begin
+  select * into v_row from public.user_credits where user_id = p_user_id for update;
+
+  -- Pro subscriber: unlimited
+  if v_row.subscription_status = 'active' then
+    return true;
+  end if;
+
+  -- Has paid credits
+  if v_row.paid_credits > 0 then
+    update public.user_credits
+      set paid_credits = paid_credits - 1, updated_at = now()
+      where user_id = p_user_id;
+    return true;
+  end if;
+
+  -- Free tier (3 grades)
+  if v_row.free_grades_used < 3 then
+    update public.user_credits
+      set free_grades_used = free_grades_used + 1, updated_at = now()
+      where user_id = p_user_id;
+    return true;
+  end if;
+
+  -- First time user — create row and use first free grade
+  if v_row.user_id is null then
+    insert into public.user_credits (user_id, free_grades_used)
+    values (p_user_id, 1)
+    on conflict (user_id) do nothing;
+    return true;
+  end if;
+
+  return false;
+end;
+$$;
+
 -- Storage bucket for card images
 insert into storage.buckets (id, name, public)
 values ('cards', 'cards', true)
