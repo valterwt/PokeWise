@@ -12,7 +12,7 @@ const PLANS = [
     period: 'forever',
     highlight: false,
     badge: null,
-    description: 'Try GradeVault with no commitment.',
+    description: 'Dip your toes in — get 3 free AI grades to see exactly how your cards score before spending a cent.',
     features: [
       '3 AI grades included',
       'Full grade breakdown',
@@ -29,7 +29,7 @@ const PLANS = [
     period: 'one-time',
     highlight: false,
     badge: 'Best Value',
-    description: 'Perfect for occasional graders.',
+    description: 'Got a small collection to assess? Buy 25 grades once and use them whenever — no subscription, no expiry.',
     features: [
       '25 AI grades',
       'Full grade breakdown',
@@ -47,7 +47,7 @@ const PLANS = [
     period: 'per month',
     highlight: true,
     badge: 'Most Popular',
-    description: 'For serious collectors.',
+    description: 'Grade your entire collection without limits. Built for collectors who want the full picture, every card, every time.',
     features: [
       'Unlimited AI grades',
       'Full grade breakdown',
