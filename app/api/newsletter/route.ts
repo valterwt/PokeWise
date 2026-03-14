@@ -31,7 +31,7 @@ export async function POST(req: NextRequest) {
       const resend = new Resend(process.env.RESEND_API_KEY)
 
       await resend.emails.send({
-        from: 'GradeVault <newsletter@gradevault.com>',
+        from: 'GradeVault <newsletter@gradevaultai.com>',
         to: email,
         subject: 'Welcome to the GradeVault Restoration Newsletter ⚡',
         html: `
