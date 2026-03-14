@@ -31,15 +31,15 @@ export async function POST(req: NextRequest) {
       const resend = new Resend(process.env.RESEND_API_KEY)
 
       await resend.emails.send({
-        from: 'PokeWise <newsletter@pokewise.app>',
+        from: 'GradeVault <newsletter@gradevault.com>',
         to: email,
-        subject: 'Welcome to the PokeWise Restoration Newsletter ⚡',
+        subject: 'Welcome to the GradeVault Restoration Newsletter ⚡',
         html: `
           <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto; background: #0a0a0a; color: #f0f0f0; padding: 40px; border-radius: 12px;">
-            <h1 style="color: #ffd700;">Welcome to PokeWise ⚡</h1>
-            <p>You're now subscribed to the <strong>Restoration Newsletter</strong> — our weekly journal documenting real Pokémon card restoration experiments.</p>
+            <h1 style="color: #ffd700;">Welcome to GradeVault ⚡</h1>
+            <p>You're now subscribed to the <strong>Restoration Newsletter</strong> — our weekly journal documenting real TCG card restoration experiments.</p>
             <p>Every week you'll get honest reports on what works, what doesn't, and the techniques we're discovering to bring damaged cards back to life.</p>
-            <p style="color: #999;">The PokeWise Team</p>
+            <p style="color: #999;">The GradeVault Team</p>
           </div>
         `,
       })

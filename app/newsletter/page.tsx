@@ -236,7 +236,7 @@ export default function NewsletterPage() {
         <div className="mt-14 text-center">
           <p className="text-gray-500 text-sm mb-4">Want to contribute your own restoration attempt?</p>
           <a
-            href="mailto:restore@pokewise.app"
+            href="mailto:restore@gradevault.com"
             className="px-6 py-3 bg-white/5 hover:bg-white/10 border border-white/10 text-white font-semibold rounded-xl transition-colors inline-block"
           >
             Submit Your Restoration →

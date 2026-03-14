@@ -12,7 +12,7 @@ const PLANS = [
     period: 'forever',
     highlight: false,
     badge: null,
-    description: 'Try PokeWise with no commitment.',
+    description: 'Try GradeVault with no commitment.',
     features: [
       '3 AI grades included',
       'Full grade breakdown',

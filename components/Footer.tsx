@@ -9,11 +9,11 @@ export default function Footer() {
           <div className="col-span-1 md:col-span-2">
             <div className="flex items-center gap-2 font-bold text-xl mb-3">
               <span className="text-2xl">⚡</span>
-              <span className="text-white">Poke</span>
-              <span className="text-[#ffd700]">Wise</span>
+              <span className="text-white">Grade</span>
+              <span className="text-[#ffd700]">Vault</span>
             </div>
             <p className="text-gray-400 text-sm leading-relaxed max-w-xs">
-              AI-powered Pokémon card grading. Instant, accurate, animated. The community platform for serious collectors.
+              AI-powered TCG card grading. Instant, accurate, animated. The community platform for serious collectors.
             </p>
             <div className="flex gap-4 mt-4">
               <a href="#" className="text-gray-500 hover:text-[#ffd700] transition-colors text-sm">Twitter</a>
@@ -45,7 +45,7 @@ export default function Footer() {
         </div>
 
         <div className="border-t border-[#1e1e1e] mt-10 pt-6 flex flex-col md:flex-row justify-between items-center gap-3">
-          <p className="text-gray-500 text-sm">© {new Date().getFullYear()} PokeWise. Not affiliated with Nintendo or The Pokémon Company.</p>
+          <p className="text-gray-500 text-sm">© {new Date().getFullYear()} GradeVault. Not affiliated with Nintendo or The Pokémon Company.</p>
           <p className="text-gray-600 text-xs">Built with Claude AI ⚡</p>
         </div>
       </div>

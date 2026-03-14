@@ -325,7 +325,7 @@ export default function GradePage() {
               'border-red-600/40 grade-glow-red'
             }`}>
               <div className="flex flex-col items-center gap-4">
-                <div className="text-gray-400 text-sm font-medium uppercase tracking-wider">PokeWise Grade</div>
+                <div className="text-gray-400 text-sm font-medium uppercase tracking-wider">GradeVault Grade</div>
                 <GradeBadge grade={gradeResult.grade} size="xl" />
                 <div className="text-3xl font-black">
                   {gradeResult.grade >= 9 ? 'Gem Mint' :

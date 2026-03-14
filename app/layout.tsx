@@ -2,15 +2,15 @@ import type { Metadata } from "next"
 import "./globals.css"
 import Navbar from "@/components/Navbar"
 import Footer from "@/components/Footer"
-import PokemonSpritesBg from "@/components/PokemonSpritesBg"
+import CardSpritesBg from "@/components/CardSpritesBg"
 
 export const metadata: Metadata = {
-  title: "PokeWise — AI Pokémon Card Grading",
-  description: "AI-powered Pokémon card grading platform. Instant, accurate, animated. Grade your cards, build your binder, join the community.",
-  keywords: "pokemon, card grading, AI grading, PSA, pokemon cards, collector",
+  title: "GradeVault — AI TCG Card Grading",
+  description: "AI-powered TCG card grading platform. Instant, accurate, animated. Grade your cards, build your binder, join the community.",
+  keywords: "TCG, card grading, AI grading, PSA, trading card grader, collector, card condition",
   openGraph: {
-    title: "PokeWise — AI Pokémon Card Grading",
-    description: "AI-powered Pokémon card grading. Instant. Accurate. Animated.",
+    title: "GradeVault — AI TCG Card Grading",
+    description: "AI-powered TCG card grading. Instant. Accurate. Animated.",
     type: "website",
   },
 }
@@ -23,7 +23,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className="antialiased min-h-screen" style={{ background: '#0b0f1e', color: '#dfe7ff', fontFamily: 'Inter, system-ui, -apple-system, sans-serif' }}>
-        <PokemonSpritesBg />
+        <CardSpritesBg />
         <div className="relative z-10">
           <Navbar />
           <main className="pt-16">

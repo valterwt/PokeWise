@@ -27,8 +27,8 @@ export default function Navbar() {
         {/* Logo */}
         <Link href="/" className="flex items-center gap-2 font-bold text-xl">
           <span className="text-2xl">⚡</span>
-          <span style={{ color: '#dfe7ff' }}>Poke</span>
-          <span style={{ color: '#7cc6ff' }}>Wise</span>
+          <span style={{ color: '#dfe7ff' }}>Grade</span>
+          <span style={{ color: '#7cc6ff' }}>Vault</span>
         </Link>
 
         {/* Desktop nav */}

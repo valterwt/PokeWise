@@ -5,8 +5,8 @@ import { useEffect, useRef } from 'react'
 // ─────────────────────────────────────────────────────────────────────────────
 // CONFIG
 // Set SPRITE_SHEET_URL to your Bubble-hosted sprite sheet (or any publicly
-// accessible PNG of Pokémon sprites on a white/solid background).
-// Example: "https://yourapp.bubbleapps.io/version-test/…/Sprites%20Nintend.png"
+// accessible PNG of card sprites on a white/solid background).
+// Example: "https://yourapp.bubbleapps.io/version-test/…/Sprites.png"
 // ─────────────────────────────────────────────────────────────────────────────
 const SPRITE_SHEET_URL = '' // ← paste your sprite sheet URL here
 
@@ -164,7 +164,7 @@ function animateSprites(target: HTMLElement, sprites: Sprite[], count = COUNT_MO
   requestAnimationFrame(tick)
 }
 
-export default function PokemonSpritesBg() {
+export default function CardSpritesBg() {
   const bgRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
@@ -172,7 +172,7 @@ export default function PokemonSpritesBg() {
     const root = bgRef.current
     segmentSprites(SPRITE_SHEET_URL)
       .then(sprites => animateSprites(root, sprites, COUNT_MOVERS))
-      .catch(err => console.error('PokemonSpritesBg: sprite extraction failed', err))
+      .catch(err => console.error('CardSpritesBg: sprite extraction failed', err))
   }, [])
 
   return (

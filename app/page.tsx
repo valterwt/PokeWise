@@ -40,7 +40,7 @@ const steps = [
     number: '01',
     icon: '📸',
     title: 'Upload',
-    description: 'Drag and drop or click to upload the front and back of your Pokémon card.',
+    description: 'Drag and drop or click to upload the front and back of your card.',
   },
   {
     number: '02',
@@ -106,12 +106,12 @@ export default function HomePage() {
               border: '1px solid rgba(124,198,255,0.2)',
               color: '#7cc6ff',
             }}>
-            <span>⚡</span> AI Pokémon Card Grading is here
+            <span>⚡</span> AI TCG Card Grading is here
           </div>
 
           <h1 className="text-4xl md:text-6xl lg:text-7xl font-black leading-tight mb-6"
             style={{ color: '#dfe7ff' }}>
-            AI Pokémon Card Grading<br />
+            AI TCG Card Grading<br />
             <span style={{ color: '#7cc6ff' }}>Instant.</span>{' '}
             <span style={{ color: '#a78bfa' }}>Accurate.</span>{' '}
             <span style={{ background: 'linear-gradient(90deg, #dfe7ff, #9fb0ff)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>Animated.</span>
@@ -119,7 +119,7 @@ export default function HomePage() {
 
           <p className="text-lg md:text-xl max-w-2xl mx-auto mb-10 leading-relaxed"
             style={{ color: '#9fb0ff' }}>
-            Upload your Pokémon card and get a professional PSA-style grade in seconds. Watch a pack open to reveal your score. Build your digital binder. Join the community.
+            Upload your trading card and get a professional PSA-style grade in seconds. Watch a pack open to reveal your score. Build your digital binder. Join the community.
           </p>
 
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
@@ -240,7 +240,7 @@ export default function HomePage() {
         <div className="max-w-5xl mx-auto">
           <div className="text-center mb-14">
             <h2 className="text-3xl md:text-4xl font-black mb-4" style={{ color: '#dfe7ff' }}>Everything You Need</h2>
-            <p className="text-lg" style={{ color: '#9fb0ff' }}>Built for Pokémon collectors, by collectors.</p>
+            <p className="text-lg" style={{ color: '#9fb0ff' }}>Built for TCG collectors, by collectors.</p>
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
             {features.map((f, i) => (
@@ -272,7 +272,7 @@ export default function HomePage() {
       >
         <div className="max-w-3xl mx-auto text-center">
           <h2 className="text-3xl md:text-4xl font-black mb-4" style={{ color: '#dfe7ff' }}>Ready to grade your collection?</h2>
-          <p className="text-lg mb-8" style={{ color: '#9fb0ff' }}>Join thousands of collectors who use PokeWise to track, grade, and showcase their cards.</p>
+          <p className="text-lg mb-8" style={{ color: '#9fb0ff' }}>Join thousands of collectors who use GradeVault to track, grade, and showcase their cards.</p>
           <Link
             href="/grade"
             className="inline-block px-10 py-5 font-bold text-xl rounded-xl transition-all hover:scale-105"
