@@ -2,8 +2,6 @@ import { NextRequest, NextResponse } from 'next/server'
 import Stripe from 'stripe'
 import { createClient } from '@supabase/supabase-js'
 
-// Must export this so Next.js doesn't parse the body — Stripe needs the raw bytes
-export const config = { api: { bodyParser: false } }
 
 function getStripe() {
   const key = process.env.STRIPE_SECRET_KEY
