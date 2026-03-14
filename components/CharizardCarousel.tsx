@@ -1,18 +1,11 @@
 'use client'
 
-// Charizard card images — save these to /public/cards/ with matching filenames:
-//   charizard-1.jpg  → 1999 Base Set Holo (PSA 10)
-//   charizard-2.jpg  → 2004 Charizard EX Holo Fire Red Leaf Green (PSA 10)
-//   charizard-3.jpg  → 2006 Gold Star EX Dragon Frontiers (PSA 10)
-//   charizard-4.jpg  → 2014 M Charizard EX Flashfire (PSA 10)
-//   charizard-5.jpg  → 2024 Charizard ex PAF Special Illustration Rare (PSA 9)
-
 const cards = [
-  { src: '/cards/charizard-1.jpg.webp', label: '1999 Base Set Holo', set: '#4/102' },
-  { src: '/cards/charizard-2.jpg.webp', label: '2004 Charizard ex Holo', set: 'Fire Red Leaf Green #105' },
-  { src: '/cards/charizard-3.jpg.webp', label: '2006 Gold Star Holo', set: 'EX Dragon Frontiers #100' },
-  { src: '/cards/charizard-4.jpg.webp', label: '2014 M Charizard EX', set: 'Flashfire #69' },
-  { src: '/cards/charizard-5.jpg.webp', label: '2024 Charizard ex SIR', set: 'PAF EN #234' },
+  { src: 'https://images.pokemontcg.io/base1/4_hires.png', label: '1999 Base Set Holo', set: '#4/102' },
+  { src: 'https://images.pokemontcg.io/ex7/105_hires.png', label: '2004 Charizard ex Holo', set: 'Fire Red Leaf Green #105' },
+  { src: 'https://images.pokemontcg.io/ex16/100_hires.png', label: '2006 Gold Star Holo', set: 'EX Dragon Frontiers #100' },
+  { src: 'https://images.pokemontcg.io/xy2/69_hires.png', label: '2014 M Charizard EX', set: 'Flashfire #69' },
+  { src: 'https://images.pokemontcg.io/sv4pt5/234_hires.png', label: '2024 Charizard ex SIR', set: 'PAF EN #234' },
 ]
 
 // 2× duplication: animation shifts exactly -50% → seamless perfect loop
