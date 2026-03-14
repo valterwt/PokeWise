@@ -4,6 +4,8 @@ import { useState, useEffect } from 'react'
 import { useSearchParams } from 'next/navigation'
 import { Suspense } from 'react'
 
+const FREE_LIMIT = parseInt(process.env.NEXT_PUBLIC_FREE_GRADES_LIMIT ?? '3', 10)
+
 const PLANS = [
   {
     id: 'free' as const,
@@ -12,9 +14,9 @@ const PLANS = [
     period: 'forever',
     highlight: false,
     badge: null,
-    description: 'Dip your toes in — get 3 free AI grades to see exactly how your cards score before spending a cent.',
+    description: `Dip your toes in — get ${FREE_LIMIT} free AI grades to see exactly how your cards score before spending a cent.`,
     features: [
-      '3 AI grades included',
+      `${FREE_LIMIT} AI grades included`,
       'Full grade breakdown',
       'Pack-opening reveal',
       'Community leaderboards',

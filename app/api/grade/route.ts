@@ -3,7 +3,7 @@ import Anthropic from '@anthropic-ai/sdk'
 import { createServerClient } from '@supabase/ssr'
 import { cookies } from 'next/headers'
 
-const FREE_ANON_LIMIT = parseInt(process.env.FREE_GRADES_LIMIT ?? '3', 10)
+const FREE_ANON_LIMIT = parseInt(process.env.NEXT_PUBLIC_FREE_GRADES_LIMIT ?? '3', 10)
 const ANON_COOKIE = 'pw_anon_grades'
 
 // Lazy init — avoids module-level crash when env var is missing
