@@ -19,7 +19,7 @@ const cards = [
   { src: 'https://images.pokemontcg.io/swsh8/271_hires.png',  label: 'Gengar VMAX',         set: 'Fusion Strike · #271/264 · 2021' },
   { src: 'https://images.pokemontcg.io/swsh9/174_hires.png',  label: 'Charizard VSTAR',     set: 'Brilliant Stars · #174/172 · 2022' },
   { src: 'https://images.pokemontcg.io/swsh12/186_hires.png', label: 'Lugia V',             set: 'Silver Tempest · #186/195 · 2022' },
-  { src: 'https://images.pokemontcg.io/sv3pt5/6_hires.png',   label: 'Charizard ex',        set: 'Pokémon 151 · #6/165 · 2023' },
+  { src: 'https://images.pokemontcg.io/ex8/107_hires.png',    label: 'Rayquaza Gold Star',  set: 'EX Deoxys · #107/107 · 2005' },
   { src: 'https://images.pokemontcg.io/sv4pt5/234_hires.png', label: 'Charizard ex SIR',    set: 'Paldean Fates · #234/91 · 2024' },
 ]
 
@@ -37,7 +37,7 @@ export default function CharizardCarousel() {
 
       <div className="text-center mb-12 px-4">
         <h2 className="text-3xl md:text-4xl font-black text-[#dfe7ff] mb-3">
-          Most Iconic Pokémon Cards
+          Some Iconic Pokémon Cards
         </h2>
         <p className="text-[#9fb0ff] text-lg">15 legendary cards spanning 25 years of the hobby</p>
       </div>
