@@ -1,36 +1,26 @@
 'use client'
 
-// Top 25 most iconic Pokémon TCG cards — vintage through modern
-// Images served from images.pokemontcg.io (public CDN, no auth required)
+// Top 15 most iconic Pokémon TCG cards — all URLs verified against pokemontcg.io
+// Image format: https://images.pokemontcg.io/{setId}/{number}_hires.png
 const cards = [
   // ── Vintage Era ─────────────────────────────────────────────────────────────
-  { src: 'https://images.pokemontcg.io/base1/4_hires.png',    label: 'Charizard',              set: 'Base Set 1999 · #4/102' },
-  { src: 'https://images.pokemontcg.io/base1/2_hires.png',    label: 'Blastoise',              set: 'Base Set 1999 · #2/102' },
-  { src: 'https://images.pokemontcg.io/base1/15_hires.png',   label: 'Venusaur',               set: 'Base Set 1999 · #15/102' },
-  { src: 'https://images.pokemontcg.io/base1/10_hires.png',   label: 'Mewtwo',                 set: 'Base Set 1999 · #10/102' },
-  { src: 'https://images.pokemontcg.io/base1/58_hires.png',   label: 'Pikachu',                set: 'Base Set 1999 · #58/102' },
-  { src: 'https://images.pokemontcg.io/neo1/9_hires.png',     label: 'Lugia',                  set: 'Neo Genesis 2000 · #9/111' },
-  { src: 'https://images.pokemontcg.io/base5/83_hires.png',   label: 'Dark Raichu',            set: 'Team Rocket 2000 · #83/82' },
-  { src: 'https://images.pokemontcg.io/neo4/107_hires.png',   label: 'Shining Charizard',      set: 'Neo Destiny 2002 · #107/105' },
-  { src: 'https://images.pokemontcg.io/ex9/107_hires.png',    label: 'Rayquaza Gold Star',     set: 'EX Deoxys 2005 · #107/107' },
-  { src: 'https://images.pokemontcg.io/ex16/100_hires.png',   label: 'Charizard Gold Star',    set: 'EX Dragon Frontiers 2006 · #100/101' },
-  { src: 'https://images.pokemontcg.io/pop5/17_hires.png',    label: 'Umbreon Gold Star',      set: 'POP Series 5 2007 · #17/17' },
+  { src: 'https://images.pokemontcg.io/base1/4_hires.png',    label: 'Charizard',           set: 'Base Set · #4/102 · 1999' },
+  { src: 'https://images.pokemontcg.io/base1/2_hires.png',    label: 'Blastoise',           set: 'Base Set · #2/102 · 1999' },
+  { src: 'https://images.pokemontcg.io/base1/10_hires.png',   label: 'Mewtwo',              set: 'Base Set · #10/102 · 1999' },
+  { src: 'https://images.pokemontcg.io/base5/83_hires.png',   label: 'Dark Raichu',         set: 'Team Rocket · #83/82 · 2000' },
+  { src: 'https://images.pokemontcg.io/neo1/9_hires.png',     label: 'Lugia',               set: 'Neo Genesis · #9/111 · 2000' },
+  { src: 'https://images.pokemontcg.io/neo4/107_hires.png',   label: 'Shining Charizard',   set: 'Neo Destiny · #107/105 · 2002' },
+  { src: 'https://images.pokemontcg.io/ex16/100_hires.png',   label: 'Charizard Gold Star', set: 'EX Dragon Frontiers · #100/101 · 2006' },
+  { src: 'https://images.pokemontcg.io/pop5/17_hires.png',    label: 'Umbreon Gold Star',   set: 'POP Series 5 · #17/17 · 2007' },
   // ── Middle Era ──────────────────────────────────────────────────────────────
-  { src: 'https://images.pokemontcg.io/xy12/11_hires.png',    label: 'Charizard',              set: 'XY Evolutions 2016 · #11/108' },
-  { src: 'https://images.pokemontcg.io/shf/SV49_hires.png',   label: 'Shiny Charizard GX',     set: 'Hidden Fates 2019 · SV49/SV94' },
-  { src: 'https://images.pokemontcg.io/sm12/254_hires.png',   label: 'Latias & Latios GX',     set: 'Cosmic Eclipse 2019 · #254/236' },
+  { src: 'https://images.pokemontcg.io/xy12/11_hires.png',    label: 'Charizard',           set: 'XY Evolutions · #11/108 · 2016' },
   // ── Modern Era ──────────────────────────────────────────────────────────────
-  { src: 'https://images.pokemontcg.io/swsh7/215_hires.png',  label: 'Umbreon VMAX Alt Art',   set: 'Evolving Skies 2021 · #215/203' },
-  { src: 'https://images.pokemontcg.io/swsh8/269_hires.png',  label: 'Mew VMAX',               set: 'Fusion Strike 2021 · #269/264' },
-  { src: 'https://images.pokemontcg.io/swsh8/270_hires.png',  label: 'Espeon VMAX Alt Art',    set: 'Fusion Strike 2021 · #270/264' },
-  { src: 'https://images.pokemontcg.io/swsh8/271_hires.png',  label: 'Gengar VMAX Alt Art',    set: 'Fusion Strike 2021 · #271/264' },
-  { src: 'https://images.pokemontcg.io/cel25/5_hires.png',    label: 'Charizard',              set: 'Celebrations 2021 · #5/25' },
-  { src: 'https://images.pokemontcg.io/swsh9/174_hires.png',  label: 'Charizard VSTAR',        set: 'Brilliant Stars 2022 · #174/172' },
-  { src: 'https://images.pokemontcg.io/swsh9/184_hires.png',  label: 'Arceus VSTAR',           set: 'Brilliant Stars 2022 · #184/172' },
-  { src: 'https://images.pokemontcg.io/swsh12/186_hires.png', label: 'Lugia V Alt Art',        set: 'Silver Tempest 2022 · #186/195' },
-  { src: 'https://images.pokemontcg.io/sv3pt5/6_hires.png',   label: 'Charizard ex',           set: 'Pokémon 151 · 2023 · #6/165' },
-  { src: 'https://images.pokemontcg.io/sv3/215_hires.png',    label: 'Charizard ex Alt Art',   set: 'Obsidian Flames 2023 · #215/197' },
-  { src: 'https://images.pokemontcg.io/sv4pt5/234_hires.png', label: 'Charizard ex SIR',       set: 'Paldean Fates 2024 · #234/91' },
+  { src: 'https://images.pokemontcg.io/swsh7/215_hires.png',  label: 'Umbreon VMAX',        set: 'Evolving Skies · #215/203 · 2021' },
+  { src: 'https://images.pokemontcg.io/swsh8/271_hires.png',  label: 'Gengar VMAX',         set: 'Fusion Strike · #271/264 · 2021' },
+  { src: 'https://images.pokemontcg.io/swsh9/174_hires.png',  label: 'Charizard VSTAR',     set: 'Brilliant Stars · #174/172 · 2022' },
+  { src: 'https://images.pokemontcg.io/swsh12/186_hires.png', label: 'Lugia V',             set: 'Silver Tempest · #186/195 · 2022' },
+  { src: 'https://images.pokemontcg.io/sv3pt5/6_hires.png',   label: 'Charizard ex',        set: 'Pokémon 151 · #6/165 · 2023' },
+  { src: 'https://images.pokemontcg.io/sv4pt5/234_hires.png', label: 'Charizard ex SIR',    set: 'Paldean Fates · #234/91 · 2024' },
 ]
 
 // 2× duplication: animation shifts exactly -50% → seamless perfect loop
@@ -49,7 +39,7 @@ export default function CharizardCarousel() {
         <h2 className="text-3xl md:text-4xl font-black text-[#dfe7ff] mb-3">
           Most Iconic Pokémon Cards
         </h2>
-        <p className="text-[#9fb0ff] text-lg">25 legendary cards spanning 25 years of the hobby</p>
+        <p className="text-[#9fb0ff] text-lg">15 legendary cards spanning 25 years of the hobby</p>
       </div>
 
       {/* Carousel track — 2× duplicated so shifting -50% loops back to start */}
@@ -67,7 +57,6 @@ export default function CharizardCarousel() {
                 className="rounded-[14px] overflow-hidden"
                 style={{ background: 'linear-gradient(180deg, #1a2040 0%, #111828 100%)' }}
               >
-                {/* Card image */}
                 <div className="relative w-full aspect-[3/4] bg-[#0d1120]">
                   {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img
