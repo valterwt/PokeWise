@@ -27,7 +27,7 @@ export async function GET() {
     cards: { card_name: string; users: { username: string } | null } | null
   }
 
-  const rows = (data ?? []) as Row[]
+  const rows = (data ?? []) as unknown as Row[]
 
   // Stats
   const totalGrades = rows.length
