@@ -126,7 +126,7 @@ export default function BinderPage() {
         if (error) {
           setFetchError('Failed to load your cards. Please try again.')
         } else {
-          setCards((data as CardRow[]) ?? [])
+          setCards((data as unknown as CardRow[]) ?? [])
         }
         setLoadingCards(false)
       })

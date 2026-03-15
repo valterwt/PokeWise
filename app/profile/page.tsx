@@ -62,7 +62,7 @@ export default function ProfilePage() {
     ]).then(([profileRes, cardsRes]) => {
       setProfile(profileRes.data ?? null)
       if (profileRes.data) setNewUsername(profileRes.data.username)
-      setCards((cardsRes.data as CardRow[]) ?? [])
+      setCards((cardsRes.data as unknown as CardRow[]) ?? [])
       setLoading(false)
     })
   }, [user])
