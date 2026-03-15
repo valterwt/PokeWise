@@ -182,8 +182,11 @@ export default function GradePage() {
     try {
       const res = await fetch('/api/grade', { method: 'POST', body: formData })
       const data = await res.json()
+      if (res.status === 401) {
+        setShowAuthModal(true)
+        return
+      }
       if (res.status === 402) {
-        // Out of free grades — redirect to pricing
         window.location.href = `/pricing?upgrade=1`
         return
       }
@@ -265,7 +268,50 @@ export default function GradePage() {
           <p className="text-gray-400">Upload front and back photos for the most accurate AI grade.</p>
         </div>
 
-        {step === 'upload' && (
+        {step === 'upload' && !user && (
+          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
+            <div className="text-center py-8">
+              <div className="text-6xl mb-6">🎴</div>
+              <h2 className="text-2xl font-black mb-3">Create a Free Account to Grade</h2>
+              <p className="text-gray-400 mb-2 max-w-md mx-auto">
+                Sign up in seconds and get <span className="text-white font-semibold">3 free AI grades</span> — no credit card required.
+              </p>
+              <p className="text-sm text-gray-600 mb-8 max-w-sm mx-auto">
+                Your grades, binder, and history are saved to your account so nothing gets lost.
+              </p>
+              <div className="flex flex-col sm:flex-row gap-3 justify-center">
+                <button
+                  onClick={() => setShowAuthModal(true)}
+                  className="px-8 py-4 bg-[#e63946] hover:bg-[#c1121f] text-white font-bold text-lg rounded-xl transition-all hover:shadow-[0_0_30px_rgba(230,57,70,0.4)]"
+                >
+                  Create Free Account
+                </button>
+                <button
+                  onClick={() => setShowAuthModal(true)}
+                  className="px-8 py-4 bg-white/5 hover:bg-white/10 border border-white/10 text-white font-semibold rounded-xl transition-colors"
+                >
+                  Sign In
+                </button>
+              </div>
+              <div className="mt-10 grid grid-cols-3 gap-4 max-w-sm mx-auto text-center">
+                <div className="bg-[#141414] border border-[#1e1e1e] rounded-xl p-4">
+                  <div className="text-2xl font-black text-[#ffd700]">3</div>
+                  <div className="text-xs text-gray-500 mt-1">Free grades</div>
+                </div>
+                <div className="bg-[#141414] border border-[#1e1e1e] rounded-xl p-4">
+                  <div className="text-2xl font-black text-[#e63946]">AI</div>
+                  <div className="text-xs text-gray-500 mt-1">PSA-style</div>
+                </div>
+                <div className="bg-[#141414] border border-[#1e1e1e] rounded-xl p-4">
+                  <div className="text-2xl font-black text-green-400">$0</div>
+                  <div className="text-xs text-gray-500 mt-1">To start</div>
+                </div>
+              </div>
+            </div>
+          </motion.div>
+        )}
+
+        {step === 'upload' && user && (
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
             {/* Card name */}
             <div className="mb-6">
