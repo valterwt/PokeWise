@@ -10,7 +10,7 @@ interface AuthModalProps {
 
 export default function AuthModal({ onClose }: AuthModalProps) {
   const { signIn, signUp } = useAuth()
-  const [mode, setMode] = useState<'login' | 'signup'>('login')
+  const [mode, setMode] = useState<'login' | 'signup' | 'reset'>('login')
   const [oauthLoading, setOauthLoading] = useState<'google' | 'discord' | null>(null)
 
   const signInWithOAuth = async (provider: 'google' | 'discord') => {
@@ -26,6 +26,10 @@ export default function AuthModal({ onClose }: AuthModalProps) {
   const [success, setSuccess] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
 
+  const switchMode = (m: typeof mode) => {
+    setMode(m); setError(null); setSuccess(null)
+  }
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setError(null)
@@ -34,12 +38,8 @@ export default function AuthModal({ onClose }: AuthModalProps) {
 
     if (mode === 'login') {
       const { error } = await signIn(email, password)
-      if (error) {
-        setError(error)
-      } else {
-        onClose()
-      }
-    } else {
+      if (error) { setError(error) } else { onClose() }
+    } else if (mode === 'signup') {
       const { error } = await signUp(email, password)
       if (error) {
         setError(error)
@@ -47,6 +47,19 @@ export default function AuthModal({ onClose }: AuthModalProps) {
         setSuccess('Account created! Check your email to confirm your account.')
         setEmail('')
         setPassword('')
+      }
+    } else {
+      // password reset
+      const redirectTo = new URL('/auth/callback', window.location.origin)
+      redirectTo.searchParams.set('next', '/auth/update-password')
+      const { error } = await supabase.auth.resetPasswordForEmail(email, {
+        redirectTo: redirectTo.toString(),
+      })
+      if (error) {
+        setError(error.message)
+      } else {
+        setSuccess('Check your email for a password reset link.')
+        setEmail('')
       }
     }
 
@@ -84,44 +97,42 @@ export default function AuthModal({ onClose }: AuthModalProps) {
         <div className="text-center mb-6">
           <div className="text-3xl mb-2">⚡</div>
           <h2 className="text-xl font-bold" style={{ color: '#dfe7ff' }}>
-            {mode === 'login' ? 'Welcome back' : 'Create account'}
+            {mode === 'login' ? 'Welcome back' : mode === 'signup' ? 'Create account' : 'Reset password'}
           </h2>
           <p className="text-sm mt-1" style={{ color: '#6b7db3' }}>
-            {mode === 'login' ? 'Sign in to access your binder and grades' : 'Join GradeVault and start grading'}
+            {mode === 'login'
+              ? 'Sign in to access your binder and grades'
+              : mode === 'signup'
+              ? 'Join GradeVault and start grading'
+              : "Enter your email and we'll send a reset link"}
           </p>
         </div>
 
-        {/* Mode tabs */}
-        <div
-          className="flex rounded-lg p-1 mb-6"
-          style={{ background: 'rgba(255,255,255,0.05)' }}
-        >
-          <button
-            onClick={() => { setMode('login'); setError(null); setSuccess(null) }}
-            className="flex-1 py-2 text-sm font-medium rounded-md transition-all"
-            style={
-              mode === 'login'
-                ? { background: 'rgba(124,198,255,0.15)', color: '#7cc6ff' }
-                : { color: '#6b7db3' }
-            }
+        {/* Mode tabs (hidden for reset mode) */}
+        {mode !== 'reset' && (
+          <div
+            className="flex rounded-lg p-1 mb-6"
+            style={{ background: 'rgba(255,255,255,0.05)' }}
           >
-            Sign In
-          </button>
-          <button
-            onClick={() => { setMode('signup'); setError(null); setSuccess(null) }}
-            className="flex-1 py-2 text-sm font-medium rounded-md transition-all"
-            style={
-              mode === 'signup'
-                ? { background: 'rgba(124,198,255,0.15)', color: '#7cc6ff' }
-                : { color: '#6b7db3' }
-            }
-          >
-            Sign Up
-          </button>
-        </div>
+            <button
+              onClick={() => switchMode('login')}
+              className="flex-1 py-2 text-sm font-medium rounded-md transition-all"
+              style={mode === 'login' ? { background: 'rgba(124,198,255,0.15)', color: '#7cc6ff' } : { color: '#6b7db3' }}
+            >
+              Sign In
+            </button>
+            <button
+              onClick={() => switchMode('signup')}
+              className="flex-1 py-2 text-sm font-medium rounded-md transition-all"
+              style={mode === 'signup' ? { background: 'rgba(124,198,255,0.15)', color: '#7cc6ff' } : { color: '#6b7db3' }}
+            >
+              Sign Up
+            </button>
+          </div>
+        )}
 
-        {/* OAuth providers */}
-        <div className="flex flex-col gap-2 mb-4">
+        {/* OAuth providers (hidden for reset mode) */}
+        {mode !== 'reset' && <div className="flex flex-col gap-2 mb-4">
           <button
             type="button"
             onClick={() => signInWithOAuth('google')}
@@ -151,12 +162,13 @@ export default function AuthModal({ onClose }: AuthModalProps) {
           </button>
         </div>
 
-        {/* Divider */}
-        <div className="flex items-center gap-3 mb-2">
-          <div className="flex-1 h-px" style={{ background: 'rgba(255,255,255,0.08)' }} />
-          <span className="text-xs" style={{ color: '#4a5580' }}>or continue with email</span>
-          <div className="flex-1 h-px" style={{ background: 'rgba(255,255,255,0.08)' }} />
-        </div>
+          {/* Divider */}
+          <div className="flex items-center gap-3 mt-2">
+            <div className="flex-1 h-px" style={{ background: 'rgba(255,255,255,0.08)' }} />
+            <span className="text-xs" style={{ color: '#4a5580' }}>or continue with email</span>
+            <div className="flex-1 h-px" style={{ background: 'rgba(255,255,255,0.08)' }} />
+          </div>
+        </div>}
 
         <form onSubmit={handleSubmit} className="flex flex-col gap-4">
           <div>
@@ -180,27 +192,43 @@ export default function AuthModal({ onClose }: AuthModalProps) {
             />
           </div>
 
-          <div>
-            <label className="block text-xs font-medium mb-1.5" style={{ color: '#9fb0ff' }}>
-              Password
-            </label>
-            <input
-              type="password"
-              value={password}
-              onChange={e => setPassword(e.target.value)}
-              required
-              placeholder={mode === 'signup' ? 'At least 6 characters' : '••••••••'}
-              minLength={6}
-              className="w-full px-4 py-2.5 rounded-lg text-sm outline-none transition-all"
-              style={{
-                background: 'rgba(255,255,255,0.06)',
-                border: '1px solid rgba(124,198,255,0.15)',
-                color: '#dfe7ff',
-              }}
-              onFocus={e => (e.currentTarget.style.borderColor = 'rgba(124,198,255,0.4)')}
-              onBlur={e => (e.currentTarget.style.borderColor = 'rgba(124,198,255,0.15)')}
-            />
-          </div>
+          {mode !== 'reset' && (
+            <div>
+              <div className="flex items-center justify-between mb-1.5">
+                <label className="block text-xs font-medium" style={{ color: '#9fb0ff' }}>
+                  Password
+                </label>
+                {mode === 'login' && (
+                  <button
+                    type="button"
+                    onClick={() => switchMode('reset')}
+                    className="text-xs transition-colors"
+                    style={{ color: '#6b7db3' }}
+                    onMouseEnter={e => (e.currentTarget.style.color = '#7cc6ff')}
+                    onMouseLeave={e => (e.currentTarget.style.color = '#6b7db3')}
+                  >
+                    Forgot password?
+                  </button>
+                )}
+              </div>
+              <input
+                type="password"
+                value={password}
+                onChange={e => setPassword(e.target.value)}
+                required
+                placeholder={mode === 'signup' ? 'At least 6 characters' : '••••••••'}
+                minLength={6}
+                className="w-full px-4 py-2.5 rounded-lg text-sm outline-none transition-all"
+                style={{
+                  background: 'rgba(255,255,255,0.06)',
+                  border: '1px solid rgba(124,198,255,0.15)',
+                  color: '#dfe7ff',
+                }}
+                onFocus={e => (e.currentTarget.style.borderColor = 'rgba(124,198,255,0.4)')}
+                onBlur={e => (e.currentTarget.style.borderColor = 'rgba(124,198,255,0.15)')}
+              />
+            </div>
+          )}
 
           {error && (
             <div
@@ -230,19 +258,22 @@ export default function AuthModal({ onClose }: AuthModalProps) {
               cursor: loading ? 'not-allowed' : 'pointer',
             }}
           >
-            {loading ? 'Please wait…' : mode === 'login' ? 'Sign In' : 'Create Account'}
+            {loading ? 'Please wait…' : mode === 'login' ? 'Sign In' : mode === 'signup' ? 'Create Account' : 'Send Reset Link'}
           </button>
         </form>
 
         {mode === 'login' && (
           <p className="text-center text-xs mt-4" style={{ color: '#6b7db3' }}>
             No account?{' '}
-            <button
-              onClick={() => { setMode('signup'); setError(null) }}
-              className="underline transition-colors"
-              style={{ color: '#7cc6ff' }}
-            >
+            <button onClick={() => switchMode('signup')} className="underline" style={{ color: '#7cc6ff' }}>
               Sign up free
+            </button>
+          </p>
+        )}
+        {mode === 'reset' && (
+          <p className="text-center text-xs mt-4" style={{ color: '#6b7db3' }}>
+            <button onClick={() => switchMode('login')} className="underline" style={{ color: '#7cc6ff' }}>
+              ← Back to sign in
             </button>
           </p>
         )}

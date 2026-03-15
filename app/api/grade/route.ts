@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import Anthropic from '@anthropic-ai/sdk'
 import { createServerClient } from '@supabase/ssr'
+import { createClient } from '@supabase/supabase-js'
 import { cookies } from 'next/headers'
 
 const FREE_ANON_LIMIT = parseInt(process.env.NEXT_PUBLIC_FREE_GRADES_LIMIT ?? '3', 10)
@@ -57,16 +58,42 @@ async function checkAndConsumeCredit(req: NextRequest): Promise<
     }
   }
 
-  // Anonymous: enforce limit via cookie
+  // Anonymous: cookie count (for UI display)
   const cookieStore = await cookies()
   const raw = cookieStore.get(ANON_COOKIE)?.value
-  const used = raw ? parseInt(raw, 10) : 0
+  const cookieUsed = raw ? parseInt(raw, 10) : 0
 
-  if (used >= FREE_ANON_LIMIT) {
+  // Primary gate: IP-based rate limiting (survives cookie clears)
+  const ip = (req.headers.get('x-forwarded-for')?.split(',')[0] ?? '').trim()
+    || req.headers.get('x-real-ip')
+    || ''
+
+  if (ip && process.env.NEXT_PUBLIC_SUPABASE_URL && process.env.SUPABASE_SERVICE_ROLE_KEY) {
+    try {
+      const ipClient = createClient(
+        process.env.NEXT_PUBLIC_SUPABASE_URL,
+        process.env.SUPABASE_SERVICE_ROLE_KEY,
+      )
+      const { data: allowed } = await ipClient.rpc('check_and_increment_anon_ip', {
+        p_ip: ip,
+        p_limit: FREE_ANON_LIMIT,
+      })
+      if (allowed === false) {
+        return { allowed: false, reason: `Free limit reached (${FREE_ANON_LIMIT} grades). Sign up or upgrade to continue.` }
+      }
+      // IP tracking succeeded — sync cookie count for UX
+      return { allowed: true, anonCount: Math.max(cookieUsed + 1, 1) }
+    } catch {
+      // IP tracking unavailable — fall through to cookie-only
+    }
+  }
+
+  // Cookie-only fallback (when IP tracking is unavailable)
+  if (cookieUsed >= FREE_ANON_LIMIT) {
     return { allowed: false, reason: `Free limit reached (${FREE_ANON_LIMIT} grades). Sign up or upgrade to continue.` }
   }
 
-  return { allowed: true, anonCount: used + 1 }
+  return { allowed: true, anonCount: cookieUsed + 1 }
 }
 
 export async function POST(req: NextRequest) {
