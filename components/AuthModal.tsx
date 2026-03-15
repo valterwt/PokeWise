@@ -160,8 +160,6 @@ export default function AuthModal({ onClose }: AuthModalProps) {
             </svg>
             {oauthLoading === 'discord' ? 'Redirecting…' : 'Continue with Discord'}
           </button>
-        </div>
-
           {/* Divider */}
           <div className="flex items-center gap-3 mt-2">
             <div className="flex-1 h-px" style={{ background: 'rgba(255,255,255,0.08)' }} />
