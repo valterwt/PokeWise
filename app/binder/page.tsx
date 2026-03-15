@@ -1,27 +1,35 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
 import Link from 'next/link'
 import GradeBadge from '@/components/GradeBadge'
+import AuthModal from '@/components/AuthModal'
+import { useAuth } from '@/lib/auth-context'
+import { supabase } from '@/lib/supabase'
 
-// Demo data shown when not connected to Supabase
-const demoCards = [
-  { id: '1', card_name: 'Charizard Base Set', grade: 8.5, date: '2024-03-10', front_image_url: null },
-  { id: '2', card_name: 'Pikachu 1st Edition', grade: 9, date: '2024-03-08', front_image_url: null },
-  { id: '3', card_name: 'Blastoise Shadowless', grade: 7, date: '2024-03-05', front_image_url: null },
-  { id: '4', card_name: 'Mewtwo Base Set', grade: 6, date: '2024-03-01', front_image_url: null },
-  { id: '5', card_name: 'Venusaur Holo', grade: 8, date: '2024-02-28', front_image_url: null },
-  { id: '6', card_name: 'Gengar 1st Edition', grade: 9.5, date: '2024-02-25', front_image_url: null },
-  { id: '7', card_name: 'Alakazam Holo', grade: 5, date: '2024-02-20', front_image_url: null },
-  { id: '8', card_name: 'Machamp 1st Edition', grade: 4, date: '2024-02-18', front_image_url: null },
-  { id: '9', card_name: 'Clefairy Doll', grade: 7.5, date: '2024-02-15', front_image_url: null },
-]
+type CardRow = {
+  id: string
+  card_name: string
+  front_image_url: string
+  back_image_url: string | null
+  created_at: string
+  grades: {
+    overall: number
+    centering: number
+    corners: number
+    edges: number
+    surface: number
+    summary: string
+    recommendation: string
+  } | null
+}
 
 type SortOption = 'date_desc' | 'date_asc' | 'grade_desc' | 'grade_asc'
 
-function BinderCard({ card, index }: { card: typeof demoCards[0]; index: number }) {
+function BinderCard({ card, index }: { card: CardRow; index: number }) {
   const [expanded, setExpanded] = useState(false)
+  const grade = card.grades?.overall ?? 0
 
   return (
     <motion.div
@@ -29,14 +37,14 @@ function BinderCard({ card, index }: { card: typeof demoCards[0]; index: number 
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay: index * 0.05 }}
       className={`bg-[#141414] border-2 rounded-2xl overflow-hidden cursor-pointer transition-all hover:-translate-y-1 ${
-        card.grade >= 9 ? 'border-[#ffd700]/40 grade-glow-gold' :
-        card.grade >= 7 ? 'border-green-500/40 grade-glow-green' :
-        card.grade >= 5 ? 'border-yellow-500/40 grade-glow-yellow' :
+        grade >= 9 ? 'border-[#ffd700]/40 grade-glow-gold' :
+        grade >= 7 ? 'border-green-500/40 grade-glow-green' :
+        grade >= 5 ? 'border-yellow-500/40 grade-glow-yellow' :
         'border-red-600/40 grade-glow-red'
       }`}
       onClick={() => setExpanded(!expanded)}
     >
-      {/* Card image area */}
+      {/* Card image */}
       <div className="relative h-48 bg-gradient-to-b from-[#1a1a1a] to-[#111] flex items-center justify-center">
         {card.front_image_url ? (
           // eslint-disable-next-line @next/next/no-img-element
@@ -44,9 +52,8 @@ function BinderCard({ card, index }: { card: typeof demoCards[0]; index: number 
         ) : (
           <span className="text-6xl opacity-40">🎴</span>
         )}
-        {/* Grade badge */}
         <div className="absolute top-3 right-3">
-          <GradeBadge grade={card.grade} size="md" />
+          <GradeBadge grade={grade} size="md" />
         </div>
       </div>
 
@@ -54,12 +61,12 @@ function BinderCard({ card, index }: { card: typeof demoCards[0]; index: number 
       <div className="p-4">
         <h3 className="font-bold text-sm mb-1 truncate">{card.card_name}</h3>
         <div className="text-xs text-gray-500">
-          Graded {new Date(card.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
+          Graded {new Date(card.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
         </div>
       </div>
 
       {/* Expanded breakdown */}
-      {expanded && (
+      {expanded && card.grades && (
         <motion.div
           initial={{ height: 0, opacity: 0 }}
           animate={{ height: 'auto', opacity: 1 }}
@@ -67,13 +74,21 @@ function BinderCard({ card, index }: { card: typeof demoCards[0]; index: number 
         >
           <div className="text-xs text-gray-500 mb-3">Full Breakdown</div>
           <div className="grid grid-cols-2 gap-2 text-xs">
-            {['Centering', 'Corners', 'Edges', 'Surface'].map((sub) => (
-              <div key={sub} className="flex justify-between bg-[#1a1a1a] rounded-lg px-3 py-2">
-                <span className="text-gray-500">{sub}</span>
-                <span className="font-bold text-[#ffd700]">{(card.grade - 0.5 + Math.random()).toFixed(1)}</span>
+            {([
+              ['Centering', card.grades.centering],
+              ['Corners',   card.grades.corners],
+              ['Edges',     card.grades.edges],
+              ['Surface',   card.grades.surface],
+            ] as [string, number][]).map(([label, val]) => (
+              <div key={label} className="flex justify-between bg-[#1a1a1a] rounded-lg px-3 py-2">
+                <span className="text-gray-500">{label}</span>
+                <span className="font-bold text-[#ffd700]">{val.toFixed(1)}</span>
               </div>
             ))}
           </div>
+          {card.grades.summary && (
+            <p className="mt-3 text-xs text-gray-500 leading-relaxed line-clamp-3">{card.grades.summary}</p>
+          )}
           <Link
             href="/grade"
             className="mt-3 block text-center text-xs text-[#e63946] hover:text-[#c1121f] transition-colors"
@@ -88,26 +103,88 @@ function BinderCard({ card, index }: { card: typeof demoCards[0]; index: number 
 }
 
 export default function BinderPage() {
+  const { user, loading: authLoading } = useAuth()
+  const [cards, setCards] = useState<CardRow[]>([])
+  const [loadingCards, setLoadingCards] = useState(false)
+  const [fetchError, setFetchError] = useState<string | null>(null)
   const [sortBy, setSortBy] = useState<SortOption>('date_desc')
   const [filterGrade, setFilterGrade] = useState<string>('all')
   const [search, setSearch] = useState('')
+  const [showAuthModal, setShowAuthModal] = useState(false)
 
-  const filteredCards = demoCards
+  useEffect(() => {
+    if (!user) return
+    setLoadingCards(true)
+    setFetchError(null)
+
+    supabase
+      .from('cards')
+      .select('id, card_name, front_image_url, back_image_url, created_at, grades(overall, centering, corners, edges, surface, summary, recommendation)')
+      .eq('user_id', user.id)
+      .order('created_at', { ascending: false })
+      .then(({ data, error }) => {
+        if (error) {
+          setFetchError('Failed to load your cards. Please try again.')
+        } else {
+          setCards((data as unknown as CardRow[]) ?? [])
+        }
+        setLoadingCards(false)
+      })
+  }, [user])
+
+  const filteredCards = cards
     .filter((c) => {
-      if (filterGrade === 'gem' && c.grade < 9) return false
-      if (filterGrade === 'nm' && (c.grade < 7 || c.grade >= 9)) return false
-      if (filterGrade === 'played' && c.grade >= 7) return false
+      const grade = c.grades?.overall ?? 0
+      if (filterGrade === 'gem' && grade < 9) return false
+      if (filterGrade === 'nm' && (grade < 7 || grade >= 9)) return false
+      if (filterGrade === 'played' && grade >= 7) return false
       if (search && !c.card_name.toLowerCase().includes(search.toLowerCase())) return false
       return true
     })
     .sort((a, b) => {
-      if (sortBy === 'grade_desc') return b.grade - a.grade
-      if (sortBy === 'grade_asc') return a.grade - b.grade
-      if (sortBy === 'date_asc') return new Date(a.date).getTime() - new Date(b.date).getTime()
-      return new Date(b.date).getTime() - new Date(a.date).getTime()
+      const ga = a.grades?.overall ?? 0
+      const gb = b.grades?.overall ?? 0
+      if (sortBy === 'grade_desc') return gb - ga
+      if (sortBy === 'grade_asc') return ga - gb
+      if (sortBy === 'date_asc') return new Date(a.created_at).getTime() - new Date(b.created_at).getTime()
+      return new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
     })
 
-  const avgGrade = demoCards.reduce((s, c) => s + c.grade, 0) / demoCards.length
+  const grades = cards.map((c) => c.grades?.overall ?? 0)
+  const avgGrade = grades.length > 0 ? grades.reduce((s, g) => s + g, 0) / grades.length : 0
+  const bestGrade = grades.length > 0 ? Math.max(...grades) : 0
+
+  if (authLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="w-8 h-8 border-2 border-[#e63946] border-t-transparent rounded-full animate-spin" />
+      </div>
+    )
+  }
+
+  if (!user) {
+    return (
+      <>
+        {showAuthModal && <AuthModal onClose={() => setShowAuthModal(false)} />}
+        <div className="min-h-screen flex flex-col items-center justify-center px-4 text-center">
+          <div className="text-6xl mb-6">📒</div>
+          <h1 className="text-3xl font-black mb-3">Your Binder</h1>
+          <p className="text-gray-400 mb-8 max-w-sm">
+            Sign in to save your graded cards and build your personal collection.
+          </p>
+          <button
+            onClick={() => setShowAuthModal(true)}
+            className="px-8 py-3 bg-[#e63946] hover:bg-[#c1121f] text-white font-bold rounded-xl transition-colors"
+          >
+            Sign In / Sign Up
+          </button>
+          <Link href="/grade" className="mt-4 text-sm text-gray-500 hover:text-white transition-colors">
+            Grade a card first →
+          </Link>
+        </div>
+      </>
+    )
+  }
 
   return (
     <div className="min-h-screen px-4 py-12">
@@ -129,10 +206,10 @@ export default function BinderPage() {
         {/* Stats */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
           {[
-            { label: 'Total Cards', value: demoCards.length },
-            { label: 'Avg Grade', value: avgGrade.toFixed(1) },
-            { label: 'Gem Mint (9+)', value: demoCards.filter((c) => c.grade >= 9).length },
-            { label: 'Best Grade', value: Math.max(...demoCards.map((c) => c.grade)) },
+            { label: 'Total Cards',  value: cards.length },
+            { label: 'Avg Grade',    value: cards.length > 0 ? avgGrade.toFixed(1) : '—' },
+            { label: 'Gem Mint (9+)', value: grades.filter((g) => g >= 9).length },
+            { label: 'Best Grade',   value: cards.length > 0 ? bestGrade : '—' },
           ].map((stat) => (
             <div key={stat.label} className="bg-[#141414] border border-[#1e1e1e] rounded-2xl p-5 text-center">
               <div className="text-2xl font-black text-[#ffd700]">{stat.value}</div>
@@ -141,54 +218,68 @@ export default function BinderPage() {
           ))}
         </div>
 
-        {/* Demo notice */}
-        <div className="mb-6 px-4 py-3 bg-[#ffd700]/10 border border-[#ffd700]/20 rounded-xl text-[#ffd700] text-sm flex items-center gap-2">
-          <span>💡</span>
-          <span>Showing demo collection. Connect Supabase and sign in to save your own graded cards.</span>
-        </div>
+        {fetchError && (
+          <div className="mb-6 px-4 py-3 bg-[#e63946]/10 border border-[#e63946]/30 rounded-xl text-[#e63946] text-sm">
+            {fetchError}
+          </div>
+        )}
 
         {/* Filters */}
-        <div className="flex flex-col sm:flex-row gap-3 mb-6">
-          <input
-            type="text"
-            placeholder="Search cards..."
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            className="flex-1 bg-[#141414] border border-[#2a2a2a] rounded-xl px-4 py-2.5 text-white placeholder-gray-600 focus:outline-none focus:border-[#e63946] transition-colors text-sm"
-          />
-          <select
-            value={filterGrade}
-            onChange={(e) => setFilterGrade(e.target.value)}
-            className="bg-[#141414] border border-[#2a2a2a] rounded-xl px-4 py-2.5 text-white focus:outline-none text-sm"
-          >
-            <option value="all">All Grades</option>
-            <option value="gem">Gem Mint (9+)</option>
-            <option value="nm">Near Mint (7–8.9)</option>
-            <option value="played">Played (&lt;7)</option>
-          </select>
-          <select
-            value={sortBy}
-            onChange={(e) => setSortBy(e.target.value as SortOption)}
-            className="bg-[#141414] border border-[#2a2a2a] rounded-xl px-4 py-2.5 text-white focus:outline-none text-sm"
-          >
-            <option value="date_desc">Newest First</option>
-            <option value="date_asc">Oldest First</option>
-            <option value="grade_desc">Highest Grade</option>
-            <option value="grade_asc">Lowest Grade</option>
-          </select>
-        </div>
+        {cards.length > 0 && (
+          <div className="flex flex-col sm:flex-row gap-3 mb-6">
+            <input
+              type="text"
+              placeholder="Search cards..."
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              className="flex-1 bg-[#141414] border border-[#2a2a2a] rounded-xl px-4 py-2.5 text-white placeholder-gray-600 focus:outline-none focus:border-[#e63946] transition-colors text-sm"
+            />
+            <select
+              value={filterGrade}
+              onChange={(e) => setFilterGrade(e.target.value)}
+              className="bg-[#141414] border border-[#2a2a2a] rounded-xl px-4 py-2.5 text-white focus:outline-none text-sm"
+            >
+              <option value="all">All Grades</option>
+              <option value="gem">Gem Mint (9+)</option>
+              <option value="nm">Near Mint (7–8.9)</option>
+              <option value="played">Played (&lt;7)</option>
+            </select>
+            <select
+              value={sortBy}
+              onChange={(e) => setSortBy(e.target.value as SortOption)}
+              className="bg-[#141414] border border-[#2a2a2a] rounded-xl px-4 py-2.5 text-white focus:outline-none text-sm"
+            >
+              <option value="date_desc">Newest First</option>
+              <option value="date_asc">Oldest First</option>
+              <option value="grade_desc">Highest Grade</option>
+              <option value="grade_asc">Lowest Grade</option>
+            </select>
+          </div>
+        )}
 
-        {/* Binder grid */}
-        {filteredCards.length > 0 ? (
+        {/* Content */}
+        {loadingCards ? (
+          <div className="flex items-center justify-center py-20">
+            <div className="w-8 h-8 border-2 border-[#e63946] border-t-transparent rounded-full animate-spin" />
+          </div>
+        ) : cards.length === 0 ? (
+          <div className="text-center py-20 text-gray-500">
+            <div className="text-5xl mb-4">📒</div>
+            <p className="mb-2">Your binder is empty.</p>
+            <Link href="/grade" className="text-sm text-[#e63946] hover:text-[#c1121f] transition-colors">
+              Grade your first card →
+            </Link>
+          </div>
+        ) : filteredCards.length === 0 ? (
+          <div className="text-center py-20 text-gray-500">
+            <div className="text-5xl mb-4">🔍</div>
+            <p>No cards match your filters.</p>
+          </div>
+        ) : (
           <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
             {filteredCards.map((card, i) => (
               <BinderCard key={card.id} card={card} index={i} />
             ))}
-          </div>
-        ) : (
-          <div className="text-center py-20 text-gray-500">
-            <div className="text-5xl mb-4">📒</div>
-            <p>No cards match your filters.</p>
           </div>
         )}
       </div>

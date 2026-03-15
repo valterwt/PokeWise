@@ -3,6 +3,8 @@
 import { useState, useCallback } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import GradeBadge from '@/components/GradeBadge'
+import AuthModal from '@/components/AuthModal'
+import { useAuth } from '@/lib/auth-context'
 import type { GradeResult } from '@/types/database'
 
 type Step = 'upload' | 'animating' | 'result'
@@ -129,6 +131,7 @@ function PackOpeningAnimation({ grade, onComplete }: { grade: GradeResult; onCom
 }
 
 export default function GradePage() {
+  const { user } = useAuth()
   const [step, setStep] = useState<Step>('upload')
   const [frontFile, setFrontFile] = useState<File | null>(null)
   const [backFile, setBackFile] = useState<File | null>(null)
@@ -138,6 +141,9 @@ export default function GradePage() {
   const [gradeResult, setGradeResult] = useState<GradeResult | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
+  const [saving, setSaving] = useState(false)
+  const [saveError, setSaveError] = useState<string | null>(null)
+  const [showAuthModal, setShowAuthModal] = useState(false)
 
   const handleFile = useCallback((file: File, side: 'front' | 'back') => {
     const reader = new FileReader()
@@ -200,10 +206,46 @@ export default function GradePage() {
     setGradeResult(null)
     setCardName('')
     setError(null)
+    setSaveError(null)
+  }
+
+  const saveToBinder = async () => {
+    if (!gradeResult || !frontFile) return
+    if (!user) {
+      setShowAuthModal(true)
+      return
+    }
+    setSaving(true)
+    setSaveError(null)
+    try {
+      const fd = new FormData()
+      fd.append('front', frontFile)
+      if (backFile) fd.append('back', backFile)
+      fd.append('cardName', cardName || 'Unknown Card')
+      fd.append('grade', String(gradeResult.grade))
+      fd.append('centering', String(gradeResult.centering))
+      fd.append('corners', String(gradeResult.corners))
+      fd.append('edges', String(gradeResult.edges))
+      fd.append('surface', String(gradeResult.surface))
+      fd.append('summary', gradeResult.summary)
+      fd.append('recommendation', gradeResult.recommendation)
+
+      const res = await fetch('/api/save-card', { method: 'POST', body: fd })
+      const data = await res.json()
+      if (!res.ok) throw new Error(data.error || 'Save failed')
+      window.location.href = '/binder'
+    } catch (err) {
+      setSaveError(err instanceof Error ? err.message : 'Failed to save')
+    } finally {
+      setSaving(false)
+    }
   }
 
   return (
     <div className="min-h-screen px-4 py-12">
+      {showAuthModal && (
+        <AuthModal onClose={() => setShowAuthModal(false)} />
+      )}
       <AnimatePresence>
         {step === 'animating' && gradeResult && (
           <PackOpeningAnimation
@@ -385,6 +427,11 @@ export default function GradePage() {
             )}
 
             {/* Actions */}
+            {saveError && (
+              <div className="px-4 py-3 bg-[#e63946]/10 border border-[#e63946]/30 rounded-xl text-[#e63946] text-sm">
+                {saveError}
+              </div>
+            )}
             <div className="flex gap-3">
               <button
                 onClick={reset}
@@ -393,10 +440,11 @@ export default function GradePage() {
                 Grade Another Card
               </button>
               <button
-                onClick={() => window.location.href = '/binder'}
-                className="flex-1 py-4 bg-[#ffd700] hover:bg-[#e6c200] text-black font-bold rounded-xl transition-colors"
+                onClick={saveToBinder}
+                disabled={saving}
+                className="flex-1 py-4 bg-[#ffd700] hover:bg-[#e6c200] disabled:opacity-60 disabled:cursor-not-allowed text-black font-bold rounded-xl transition-colors"
               >
-                Save to Binder
+                {saving ? 'Saving…' : user ? 'Save to Binder' : 'Sign In to Save'}
               </button>
             </div>
           </motion.div>

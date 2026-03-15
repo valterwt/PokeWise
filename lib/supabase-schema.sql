@@ -163,6 +163,56 @@ begin
 end;
 $$;
 
+-- Stripe webhook event deduplication (prevents double-crediting on retries)
+create table if not exists public.stripe_events (
+  id           text primary key,           -- Stripe event ID (evt_xxx)
+  processed_at timestamptz not null default now()
+);
+
+alter table public.stripe_events enable row level security;
+-- No user-facing policies; service role only
+
+-- Anonymous grade rate-limiting by IP (survives cookie clears)
+create table if not exists public.anon_grade_ips (
+  ip           text primary key,
+  count        int not null default 0,
+  window_start timestamptz not null default now()
+);
+
+alter table public.anon_grade_ips enable row level security;
+-- No user-facing policies; service role only
+
+-- RPC: atomically check + increment anonymous grade count by IP
+-- Returns true if the grade is allowed, false if limit reached
+create or replace function check_and_increment_anon_ip(p_ip text, p_limit int)
+returns boolean language plpgsql security definer as $$
+declare
+  v_row public.anon_grade_ips%rowtype;
+begin
+  select * into v_row from public.anon_grade_ips where ip = p_ip for update;
+
+  if v_row.ip is null then
+    -- First request from this IP
+    insert into public.anon_grade_ips (ip, count, window_start) values (p_ip, 1, now());
+    return true;
+  end if;
+
+  -- Reset window if older than 30 days
+  if v_row.window_start < now() - interval '30 days' then
+    update public.anon_grade_ips set count = 1, window_start = now() where ip = p_ip;
+    return true;
+  end if;
+
+  -- Enforce limit
+  if v_row.count >= p_limit then
+    return false;
+  end if;
+
+  update public.anon_grade_ips set count = count + 1 where ip = p_ip;
+  return true;
+end;
+$$;
+
 -- Storage bucket for card images
 insert into storage.buckets (id, name, public)
 values ('cards', 'cards', true)
