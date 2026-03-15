@@ -14,14 +14,14 @@ const PLANS = [
     period: 'forever',
     highlight: false,
     badge: null,
-    description: `Dip your toes in — get ${FREE_LIMIT} free AI grades to see exactly how your cards score before spending a cent.`,
+    description: `Create a free account and get ${FREE_LIMIT} AI grades — no credit card required. See exactly how your cards score before upgrading.`,
     features: [
-      `${FREE_LIMIT} AI grades included`,
+      `${FREE_LIMIT} AI grades on signup`,
       'Full grade breakdown',
       'Pack-opening reveal',
       'Community leaderboards',
     ],
-    cta: 'Get Started Free',
+    cta: 'Create Free Account',
     href: '/grade',
   },
   {
@@ -128,7 +128,7 @@ function PricingContent() {
             Grade more. Collect smarter.
           </h1>
           <p className="text-[#9fb0ff] text-lg max-w-xl mx-auto">
-            Start for free — no credit card required. Upgrade when you're ready.
+            Create a free account to get started — no credit card required. Upgrade when you're ready.
           </p>
         </div>
 

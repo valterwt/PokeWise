@@ -1,11 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import Anthropic from '@anthropic-ai/sdk'
 import { createServerClient } from '@supabase/ssr'
-import { createClient } from '@supabase/supabase-js'
 import { cookies } from 'next/headers'
-
-const FREE_ANON_LIMIT = parseInt(process.env.NEXT_PUBLIC_FREE_GRADES_LIMIT ?? '3', 10)
-const ANON_COOKIE = 'pw_anon_grades'
 
 // Lazy init — avoids module-level crash when env var is missing
 function getClient() {
@@ -14,94 +10,57 @@ function getClient() {
   return new Anthropic({ apiKey })
 }
 
-async function checkAndConsumeCredit(req: NextRequest): Promise<
-  { allowed: true; anonCount?: number } | { allowed: false; reason: string }
+async function checkAndConsumeCredit(): Promise<
+  { allowed: true } | { allowed: false; reason: string; requiresAuth?: boolean }
 > {
-  // Try to get authenticated user via Supabase SSR
-  if (
-    process.env.NEXT_PUBLIC_SUPABASE_URL &&
-    process.env.SUPABASE_SERVICE_ROLE_KEY
-  ) {
-    const cookieStore = await cookies()
-    const supabase = createServerClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL,
-      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-      {
-        cookies: {
-          getAll: () => cookieStore.getAll(),
-          setAll: () => {},
-        },
-      },
-    )
-
-    const { data: { user } } = await supabase.auth.getUser()
-
-    if (user) {
-      // Authenticated: use DB credits
-      const adminClient = createServerClient(
-        process.env.NEXT_PUBLIC_SUPABASE_URL,
-        process.env.SUPABASE_SERVICE_ROLE_KEY,
-        { cookies: { getAll: () => [], setAll: () => {} } },
-      )
-      const { data, error } = await adminClient.rpc('consume_grade_credit', {
-        p_user_id: user.id,
-      })
-      if (error) {
-        console.error('[grade] consume_grade_credit error:', error)
-        // Let it through if DB check fails — don't block grading on DB errors
-        return { allowed: true }
-      }
-      if (data === false) {
-        return { allowed: false, reason: 'No grades remaining. Upgrade to continue.' }
-      }
-      return { allowed: true }
-    }
-  }
-
-  // Anonymous: cookie count (for UI display)
   const cookieStore = await cookies()
-  const raw = cookieStore.get(ANON_COOKIE)?.value
-  const cookieUsed = raw ? parseInt(raw, 10) : 0
+  const supabase = createServerClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    {
+      cookies: {
+        getAll: () => cookieStore.getAll(),
+        setAll: () => {},
+      },
+    },
+  )
 
-  // Primary gate: IP-based rate limiting (survives cookie clears)
-  const ip = (req.headers.get('x-forwarded-for')?.split(',')[0] ?? '').trim()
-    || req.headers.get('x-real-ip')
-    || ''
+  const { data: { user } } = await supabase.auth.getUser()
 
-  if (ip && process.env.NEXT_PUBLIC_SUPABASE_URL && process.env.SUPABASE_SERVICE_ROLE_KEY) {
-    try {
-      const ipClient = createClient(
-        process.env.NEXT_PUBLIC_SUPABASE_URL,
-        process.env.SUPABASE_SERVICE_ROLE_KEY,
-      )
-      const { data: allowed } = await ipClient.rpc('check_and_increment_anon_ip', {
-        p_ip: ip,
-        p_limit: FREE_ANON_LIMIT,
-      })
-      if (allowed === false) {
-        return { allowed: false, reason: `Free limit reached (${FREE_ANON_LIMIT} grades). Sign up or upgrade to continue.` }
-      }
-      // IP tracking succeeded — sync cookie count for UX
-      return { allowed: true, anonCount: Math.max(cookieUsed + 1, 1) }
-    } catch {
-      // IP tracking unavailable — fall through to cookie-only
-    }
+  if (!user) {
+    return { allowed: false, reason: 'Sign in to grade your cards.', requiresAuth: true }
   }
 
-  // Cookie-only fallback (when IP tracking is unavailable)
-  if (cookieUsed >= FREE_ANON_LIMIT) {
-    return { allowed: false, reason: `Free limit reached (${FREE_ANON_LIMIT} grades). Sign up or upgrade to continue.` }
+  const adminClient = createServerClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.SUPABASE_SERVICE_ROLE_KEY!,
+    { cookies: { getAll: () => [], setAll: () => {} } },
+  )
+
+  const { data, error } = await adminClient.rpc('consume_grade_credit', {
+    p_user_id: user.id,
+  })
+
+  if (error) {
+    console.error('[grade] consume_grade_credit error:', error)
+    // Let it through if DB check fails — don't block grading on DB errors
+    return { allowed: true }
   }
 
-  return { allowed: true, anonCount: cookieUsed + 1 }
+  if (data === false) {
+    return { allowed: false, reason: 'No grades remaining. Upgrade to continue.' }
+  }
+
+  return { allowed: true }
 }
 
 export async function POST(req: NextRequest) {
   try {
-    const creditCheck = await checkAndConsumeCredit(req)
+    const creditCheck = await checkAndConsumeCredit()
 
     if (!creditCheck.allowed) {
-      return NextResponse.json({ error: creditCheck.reason, upgrade: true }, { status: 402 })
+      const status = 'requiresAuth' in creditCheck && creditCheck.requiresAuth ? 401 : 402
+      return NextResponse.json({ error: creditCheck.reason }, { status })
     }
 
     const client = getClient()
@@ -199,19 +158,7 @@ Return ONLY a valid JSON object with no additional text:
       throw new Error('Invalid grade value from AI')
     }
 
-    const response = NextResponse.json(result)
-
-    // Persist anon usage in cookie (httpOnly, 30-day)
-    if ('anonCount' in creditCheck && creditCheck.anonCount !== undefined) {
-      response.cookies.set(ANON_COOKIE, String(creditCheck.anonCount), {
-        httpOnly: true,
-        path: '/',
-        maxAge: 60 * 60 * 24 * 30,
-        sameSite: 'lax',
-      })
-    }
-
-    return response
+    return NextResponse.json(result)
   } catch (error) {
     console.error('[grade] error:', error)
     return NextResponse.json(
