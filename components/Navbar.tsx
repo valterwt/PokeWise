@@ -6,6 +6,11 @@ import { useState } from 'react'
 import { useAuth } from '@/lib/auth-context'
 import AuthModal from '@/components/AuthModal'
 
+const authedNavLinks = [
+  { href: '/profile', label: 'Profile' },
+  { href: '/account', label: 'Account' },
+]
+
 const navLinks = [
   { href: '/', label: 'Home' },
   { href: '/grade', label: 'Grade a Card' },
@@ -80,17 +85,37 @@ export default function Navbar() {
             {!loading && (
               user ? (
                 <div className="flex items-center gap-3">
-                  {/* Avatar */}
-                  <div
-                    className="w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold select-none"
+                  {/* Avatar → /profile */}
+                  <Link
+                    href="/profile"
+                    className="w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold select-none hover:scale-110 transition-transform"
                     style={{
                       background: 'linear-gradient(135deg, #7cc6ff, #a78bfa)',
                       color: '#0b0f1e',
                     }}
-                    title={user.email ?? ''}
+                    title="My Profile"
                   >
                     {avatarLetter}
-                  </div>
+                  </Link>
+                  <Link
+                    href="/account"
+                    className="px-3 py-1.5 text-sm font-medium rounded-lg transition-all"
+                    style={{
+                      background: 'rgba(255,255,255,0.06)',
+                      border: '1px solid rgba(255,255,255,0.1)',
+                      color: '#9fb0ff',
+                    }}
+                    onMouseEnter={e => {
+                      (e.currentTarget as HTMLElement).style.color = '#dfe7ff'
+                      ;(e.currentTarget as HTMLElement).style.background = 'rgba(255,255,255,0.1)'
+                    }}
+                    onMouseLeave={e => {
+                      (e.currentTarget as HTMLElement).style.color = '#9fb0ff'
+                      ;(e.currentTarget as HTMLElement).style.background = 'rgba(255,255,255,0.06)'
+                    }}
+                  >
+                    Account
+                  </Link>
                   <button
                     onClick={handleSignOut}
                     disabled={signingOut}
@@ -188,21 +213,38 @@ export default function Navbar() {
 
             {!loading && (
               user ? (
-                <div className="mt-2 flex items-center gap-3 px-4 py-3 rounded-lg"
-                  style={{ background: 'rgba(124,198,255,0.06)', border: '1px solid rgba(124,198,255,0.1)' }}>
-                  <div
-                    className="w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold flex-shrink-0"
-                    style={{ background: 'linear-gradient(135deg, #7cc6ff, #a78bfa)', color: '#0b0f1e' }}
-                  >
-                    {avatarLetter}
+                <div className="mt-2 space-y-1">
+                  <div className="flex items-center gap-3 px-4 py-3 rounded-lg"
+                    style={{ background: 'rgba(124,198,255,0.06)', border: '1px solid rgba(124,198,255,0.1)' }}>
+                    <div
+                      className="w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold flex-shrink-0"
+                      style={{ background: 'linear-gradient(135deg, #7cc6ff, #a78bfa)', color: '#0b0f1e' }}
+                    >
+                      {avatarLetter}
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-xs truncate" style={{ color: '#9fb0ff' }}>{user.email}</p>
+                    </div>
                   </div>
-                  <div className="flex-1 min-w-0">
-                    <p className="text-xs truncate" style={{ color: '#9fb0ff' }}>{user.email}</p>
-                  </div>
+                  {authedNavLinks.map((link) => (
+                    <Link
+                      key={link.href}
+                      href={link.href}
+                      onClick={() => setMenuOpen(false)}
+                      className="block px-4 py-3 rounded-lg text-sm font-medium transition-colors"
+                      style={
+                        pathname === link.href
+                          ? { background: 'rgba(124,198,255,0.12)', color: '#7cc6ff' }
+                          : { color: '#9fb0ff' }
+                      }
+                    >
+                      {link.label}
+                    </Link>
+                  ))}
                   <button
                     onClick={() => { handleSignOut(); setMenuOpen(false) }}
-                    className="text-xs font-medium"
-                    style={{ color: '#7cc6ff' }}
+                    className="w-full text-left px-4 py-3 rounded-lg text-sm font-medium transition-colors"
+                    style={{ color: '#e63946' }}
                   >
                     Sign Out
                   </button>
