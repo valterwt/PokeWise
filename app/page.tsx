@@ -37,19 +37,19 @@ const features = [
 
 const steps = [
   {
-    number: '01',
+    number: 'Step One',
     icon: '📸',
     title: 'Upload',
     description: 'Drag and drop or click to upload the front and back of your card.',
   },
   {
-    number: '02',
+    number: 'Step Two',
     icon: '🔍',
     title: 'AI Analyzes',
     description: 'Claude AI examines every detail — centering, corner wear, edge condition, and surface quality.',
   },
   {
-    number: '03',
+    number: 'Step Three',
     icon: '🎴',
     title: 'Get Your Grade',
     description: 'A pack opens, your card is revealed, and your grade appears with a full condition breakdown.',
@@ -187,7 +187,14 @@ export default function HomePage() {
                   }}
                 >
                   <div className="text-4xl mb-4">{step.icon}</div>
-                  <div className="text-sm font-bold mb-2" style={{ color: '#7cc6ff' }}>{step.number}</div>
+                  <div
+                    className="inline-block text-xs font-bold uppercase tracking-widest px-3 py-1 rounded-full mb-3"
+                    style={{
+                      background: 'rgba(124,198,255,0.1)',
+                      border: '1px solid rgba(124,198,255,0.25)',
+                      color: '#7cc6ff',
+                    }}
+                  >{step.number}</div>
                   <h3 className="text-xl font-bold mb-3" style={{ color: '#dfe7ff' }}>{step.title}</h3>
                   <p className="leading-relaxed" style={{ color: '#9fb0ff' }}>{step.description}</p>
                 </div>
