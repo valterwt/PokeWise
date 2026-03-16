@@ -5,6 +5,7 @@ import { usePathname } from 'next/navigation'
 import { useState } from 'react'
 import { useAuth } from '@/lib/auth-context'
 import AuthModal from '@/components/AuthModal'
+import GradeVaultLogo from '@/components/GradeVaultLogo'
 
 const authedNavLinks = [
   { href: '/profile', label: 'Profile' },
@@ -44,10 +45,8 @@ export default function Navbar() {
         }}>
         <div className="max-w-7xl mx-auto px-4 h-16 flex items-center justify-between">
           {/* Logo */}
-          <Link href="/" className="flex items-center gap-2 font-bold text-xl">
-            <span className="text-2xl">⚡</span>
-            <span style={{ color: '#dfe7ff' }}>Grade</span>
-            <span style={{ color: '#7cc6ff' }}>Vault</span>
+          <Link href="/" className="flex items-center hover:opacity-90 transition-opacity">
+            <GradeVaultLogo size="sm" />
           </Link>
 
           {/* Desktop nav */}

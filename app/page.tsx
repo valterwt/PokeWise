@@ -1,6 +1,7 @@
 import Link from 'next/link'
 import GradeBadge from '@/components/GradeBadge'
 import CharizardCarousel from '@/components/CharizardCarousel'
+import GradeVaultLogo from '@/components/GradeVaultLogo'
 
 const features = [
   {
@@ -100,6 +101,21 @@ export default function HomePage() {
         </div>
 
         <div className="relative max-w-5xl mx-auto text-center">
+          {/* Hero Logo */}
+          <div className="flex justify-center mb-8">
+            <div
+              className="p-5 rounded-3xl"
+              style={{
+                background: 'rgba(19,23,41,0.7)',
+                border: '1px solid rgba(255,215,0,0.15)',
+                boxShadow: '0 0 60px rgba(255,215,0,0.08), 0 0 120px rgba(124,198,255,0.06)',
+                backdropFilter: 'blur(8px)',
+              }}
+            >
+              <GradeVaultLogo size="xl" />
+            </div>
+          </div>
+
           <div className="inline-flex items-center gap-2 text-sm font-medium px-4 py-2 rounded-full mb-8"
             style={{
               background: 'rgba(124,198,255,0.08)',
