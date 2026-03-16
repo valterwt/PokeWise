@@ -262,10 +262,10 @@ export default function GradePage() {
         {/* Header */}
         <div className="text-center mb-12">
           <div className="inline-flex items-center gap-2 bg-[#e63946]/10 border border-[#e63946]/20 text-[#e63946] text-sm font-medium px-4 py-2 rounded-full mb-6">
-            🤖 AI Grading — PSA-Style 1–10
+            🤖 AI Condition Estimate — PSA-Style 1–10
           </div>
           <h1 className="text-3xl md:text-4xl font-black mb-3">Grade Your Card</h1>
-          <p className="text-gray-400">Upload front and back photos for the most accurate AI grade.</p>
+          <p className="text-gray-400">Upload front and back photos for your AI condition estimate. Results are a guide, not a guarantee — always verify with a professional grader before submitting high-value cards.</p>
         </div>
 
         {step === 'upload' && !user && (
@@ -413,7 +413,7 @@ export default function GradePage() {
               'border-red-600/40 grade-glow-red'
             }`}>
               <div className="flex flex-col items-center gap-4">
-                <div className="text-gray-400 text-sm font-medium uppercase tracking-wider">GradeVault Grade</div>
+                <div className="text-gray-400 text-sm font-medium uppercase tracking-wider">GradeVaultAI Estimate</div>
                 <GradeBadge grade={gradeResult.grade} size="xl" />
                 <div className="text-3xl font-black">
                   {gradeResult.grade >= 9 ? 'Gem Mint' :
@@ -441,6 +441,7 @@ export default function GradePage() {
             <div className="bg-[#141414] border border-[#1e1e1e] rounded-2xl p-6">
               <h3 className="font-bold text-lg mb-3">AI Condition Report</h3>
               <p className="text-gray-400 leading-relaxed">{gradeResult.summary}</p>
+              <p className="text-xs text-gray-600 mt-3">This is an AI-generated estimate. It may not match a professional grader&apos;s assessment. If you think we got this wrong, we want to hear it — your feedback is how this improves.</p>
             </div>
 
             {/* Recommendation */}
