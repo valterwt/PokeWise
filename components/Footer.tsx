@@ -13,7 +13,7 @@ export default function Footer() {
               <span className="text-[#ffd700]">Vault</span>
             </div>
             <p className="text-gray-400 text-sm leading-relaxed max-w-xs">
-              AI-powered TCG card grading. Instant, accurate, animated. The community platform for serious collectors.
+              An AI-assisted TCG card grading tool — built transparently, improved through community feedback. Not the final word. A better starting point.
             </p>
             <div className="flex gap-4 mt-4">
               <a href="#" className="text-gray-500 hover:text-[#ffd700] transition-colors text-sm">Twitter</a>

@@ -14,7 +14,7 @@ const PLANS = [
     period: 'forever',
     highlight: false,
     badge: null,
-    description: `Create a free account and get ${FREE_LIMIT} AI grades — no credit card required. See exactly how your cards score before upgrading.`,
+    description: `Start with ${FREE_LIMIT} free AI condition estimates — no credit card, no commitment. Try it, test it, and decide for yourself if it's worth more.`,
     features: [
       `${FREE_LIMIT} AI grades on signup`,
       'Full grade breakdown',
@@ -49,7 +49,7 @@ const PLANS = [
     period: 'per month',
     highlight: true,
     badge: 'Most Popular',
-    description: 'Grade your entire collection without limits. Built for collectors who want the full picture, every card, every time.',
+    description: 'Grade your entire collection without limits. For collectors who want a consistent AI baseline across every card — and want to help make it better.',
     features: [
       'Unlimited AI grades',
       'Full grade breakdown',
@@ -125,10 +125,10 @@ function PricingContent() {
             ⚡ Simple, transparent pricing
           </div>
           <h1 className="text-4xl md:text-5xl font-black text-[#dfe7ff] mb-4">
-            Grade more. Collect smarter.
+            Simple pricing. No surprises.
           </h1>
           <p className="text-[#9fb0ff] text-lg max-w-xl mx-auto">
-            Create a free account to get started — no credit card required. Upgrade when you're ready.
+            Start free — no credit card required. GradeVaultAI is a tool that earns your trust over time, not one that locks you in on day one.
           </p>
         </div>
 

@@ -1,12 +1,13 @@
 import Link from 'next/link'
 import GradeBadge from '@/components/GradeBadge'
 import CharizardCarousel from '@/components/CharizardCarousel'
+import GradeVaultLogo from '@/components/GradeVaultLogo'
 
 const features = [
   {
     icon: '🤖',
     title: 'AI Grading',
-    description: 'Claude AI analyzes your card images using PSA-style criteria — centering, corners, edges, and surface — returning a precise 1–10 grade.',
+    description: 'Claude AI analyzes your card images using PSA-style criteria — centering, corners, edges, and surface — returning an AI-estimated 1–10 condition score. Not a replacement for professional grading. A starting point.',
   },
   {
     icon: '✨',
@@ -66,7 +67,7 @@ const testimonials = [
 const faqs = [
   {
     q: 'How accurate is the AI grading?',
-    a: "Our AI uses Claude's vision capabilities trained on PSA-style criteria. While not a replacement for professional grading, it provides a reliable indicator of card condition and is excellent for deciding which cards are worth submitting for professional grading.",
+    a: "Honestly? It's a work in progress — and we say that openly. GradeVaultAI uses Claude's vision capabilities to assess cards against PSA-style criteria. It will not always match a professional grader's eye. It gets better over time through real use, community feedback, and iteration. We're not here to replace PSA or claim we've cracked grading — we're building a transparent tool, in public, with the people who actually use it.",
   },
   {
     q: 'What Pokémon cards can I grade?',
@@ -100,26 +101,41 @@ export default function HomePage() {
         </div>
 
         <div className="relative max-w-5xl mx-auto text-center">
+          {/* Hero Logo */}
+          <div className="flex justify-center mb-8">
+            <div
+              className="p-5 rounded-3xl"
+              style={{
+                background: 'rgba(19,23,41,0.7)',
+                border: '1px solid rgba(255,215,0,0.15)',
+                boxShadow: '0 0 60px rgba(255,215,0,0.08), 0 0 120px rgba(124,198,255,0.06)',
+                backdropFilter: 'blur(8px)',
+              }}
+            >
+              <GradeVaultLogo size="xl" />
+            </div>
+          </div>
+
           <div className="inline-flex items-center gap-2 text-sm font-medium px-4 py-2 rounded-full mb-8"
             style={{
               background: 'rgba(124,198,255,0.08)',
               border: '1px solid rgba(124,198,255,0.2)',
               color: '#7cc6ff',
             }}>
-            <span>⚡</span> AI TCG Card Grading is here
+            <span>⚡</span> AI TCG Card Grading — built openly with the community
           </div>
 
           <h1 className="text-4xl md:text-6xl lg:text-7xl font-black leading-tight mb-6"
             style={{ color: '#dfe7ff' }}>
             AI TCG Card Grading<br />
             <span style={{ color: '#7cc6ff' }}>Instant.</span>{' '}
-            <span style={{ color: '#a78bfa' }}>Accurate.</span>{' '}
-            <span style={{ background: 'linear-gradient(90deg, #dfe7ff, #9fb0ff)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>Animated.</span>
+            <span style={{ color: '#a78bfa' }}>Honest.</span>{' '}
+            <span style={{ background: 'linear-gradient(90deg, #dfe7ff, #9fb0ff)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>Evolving.</span>
           </h1>
 
           <p className="text-lg md:text-xl max-w-2xl mx-auto mb-10 leading-relaxed"
             style={{ color: '#9fb0ff' }}>
-            Upload your trading card and get a professional PSA-style grade in seconds. Watch a pack open to reveal your score. Build your digital binder. Join the community.
+            Upload your card and get an AI-assessed condition estimate in seconds. This is not the definitive word on your card — it&apos;s a starting point. We&apos;re building this openly, improving through real use, and we welcome your feedback when we get it wrong.
           </p>
 
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
@@ -247,7 +263,7 @@ export default function HomePage() {
         <div className="max-w-5xl mx-auto">
           <div className="text-center mb-14">
             <h2 className="text-3xl md:text-4xl font-black mb-4" style={{ color: '#dfe7ff' }}>Everything You Need</h2>
-            <p className="text-lg" style={{ color: '#9fb0ff' }}>Built for TCG collectors, by collectors.</p>
+            <p className="text-lg" style={{ color: '#9fb0ff' }}>Built for TCG collectors, by collectors — and improved by them too.</p>
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
             {features.map((f, i) => (
@@ -278,8 +294,8 @@ export default function HomePage() {
         }}
       >
         <div className="max-w-3xl mx-auto text-center">
-          <h2 className="text-3xl md:text-4xl font-black mb-4" style={{ color: '#dfe7ff' }}>Ready to grade your collection?</h2>
-          <p className="text-lg mb-8" style={{ color: '#9fb0ff' }}>Join thousands of collectors who use GradeVault to track, grade, and showcase their cards.</p>
+          <h2 className="text-3xl md:text-4xl font-black mb-4" style={{ color: '#dfe7ff' }}>Grade your cards. Tell us where we&apos;re wrong.</h2>
+          <p className="text-lg mb-8" style={{ color: '#9fb0ff' }}>This hobby has had enough smoke and mirrors. GradeVaultAI is free to use, transparent about its limits, and gets better every time the community puts it to the test.</p>
           <Link
             href="/grade"
             className="inline-block px-10 py-5 font-bold text-xl rounded-xl transition-all hover:scale-105"
