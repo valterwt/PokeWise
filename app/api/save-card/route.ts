@@ -48,10 +48,20 @@ export async function POST(req: NextRequest) {
       { onConflict: 'id', ignoreDuplicates: true },
     )
 
-    // 2. Generate card ID up-front so we can use it as the storage path
+    // 2. Ensure the 'cards' storage bucket exists (creates it if missing)
+    const { error: bucketErr } = await adminClient.storage.createBucket('cards', {
+      public: true,
+      allowedMimeTypes: ['image/jpeg', 'image/png', 'image/webp', 'image/gif'],
+    })
+    // Ignore "already exists" error (code 23505 or message contains 'already exists')
+    if (bucketErr && !bucketErr.message.toLowerCase().includes('already exist')) {
+      console.warn('[save-card] bucket create warning:', bucketErr.message)
+    }
+
+    // 3. Generate card ID up-front so we can use it as the storage path
     const cardId = crypto.randomUUID()
 
-    // 3. Upload images to storage
+    // 4. Upload images to storage
     const ext = (f: File) => f.type.split('/')[1]?.replace('jpeg', 'jpg') || 'jpg'
 
     const uploadFile = async (file: File, path: string): Promise<string> => {
@@ -69,7 +79,7 @@ export async function POST(req: NextRequest) {
       ? await uploadFile(backFile, `${user.id}/${cardId}/back.${ext(backFile)}`)
       : null
 
-    // 4. Insert card record
+    // 5. Insert card record
     const { error: cardError } = await adminClient.from('cards').insert({
       id: cardId,
       user_id: user.id,
@@ -79,7 +89,7 @@ export async function POST(req: NextRequest) {
     })
     if (cardError) throw new Error(`Card insert failed: ${cardError.message}`)
 
-    // 5. Insert grade record
+    // 6. Insert grade record
     const { error: gradeError } = await adminClient.from('grades').insert({
       card_id: cardId,
       overall: grade,

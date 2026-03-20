@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useCallback } from 'react'
+import { useState, useCallback, useMemo } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import GradeBadge from '@/components/GradeBadge'
 import AuthModal from '@/components/AuthModal'
@@ -31,96 +31,313 @@ function SubScoreBar({ label, value }: { label: string; value: number }) {
   )
 }
 
-function PackOpeningAnimation({ grade, onComplete }: { grade: GradeResult; onComplete: () => void }) {
+function GradeVaultSlab({
+  grade,
+  frontPreview,
+  cardName,
+  revealed,
+}: {
+  grade: GradeResult
+  frontPreview: string | null
+  cardName: string
+  revealed: boolean
+}) {
+  const gradeColor =
+    grade.grade >= 9 ? '#ffd700' :
+    grade.grade >= 7 ? '#22c55e' :
+    grade.grade >= 5 ? '#eab308' : '#e63946'
+
+  const gradeLabel =
+    grade.grade >= 9.5 ? 'GEM-MT' :
+    grade.grade >= 9   ? 'MINT'   :
+    grade.grade >= 8   ? 'NM-MT'  :
+    grade.grade >= 7   ? 'NM'     :
+    grade.grade >= 6   ? 'EX-NM'  :
+    grade.grade >= 5   ? 'EX'     :
+    grade.grade >= 4   ? 'VG-EX'  : 'VG'
+
+  // Stable serial number derived from grade values
+  const serial = useMemo(() => {
+    const seed = Math.round((grade.grade + grade.centering + grade.corners) * 1000000)
+    return String((seed % 90000000) + 10000000)
+  }, [grade.grade, grade.centering, grade.corners])
+
+  return (
+    <div
+      className="relative select-none"
+      style={{
+        filter: 'drop-shadow(0 30px 60px rgba(0,0,0,0.9)) drop-shadow(0 0 40px rgba(124,198,255,0.12))',
+      }}
+    >
+      {/* Outer plastic casing */}
+      <div
+        className="rounded-xl overflow-hidden"
+        style={{
+          background: 'linear-gradient(160deg, rgba(210,225,255,0.12) 0%, rgba(170,195,240,0.06) 40%, rgba(210,225,255,0.10) 100%)',
+          border: '2px solid rgba(180,205,255,0.28)',
+          boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.12), inset 0 -1px 0 rgba(0,0,0,0.3)',
+          padding: '5px',
+          width: '230px',
+        }}
+      >
+        {/* === TOP LABEL BAND === */}
+        <div
+          className="rounded-t-lg mb-[3px]"
+          style={{
+            background: 'linear-gradient(180deg, #0d1628 0%, #111c35 60%, #0e1729 100%)',
+            border: '1px solid rgba(124,198,255,0.15)',
+            padding: '10px 12px 8px',
+          }}
+        >
+          {/* Row 1: year + grade label + grade number */}
+          <div className="flex justify-between items-center mb-[6px]">
+            <span className="font-mono text-[9px] text-white/50">2024 TCG</span>
+            <motion.span
+              className="font-mono text-[9px] font-bold tracking-wider"
+              style={{ color: gradeColor }}
+              initial={{ opacity: 0 }}
+              animate={{ opacity: revealed ? 1 : 0 }}
+              transition={{ duration: 0.4, delay: revealed ? 0 : 0 }}
+            >
+              {gradeLabel}
+            </motion.span>
+            <motion.span
+              className="font-mono text-[13px] font-black"
+              style={{ color: gradeColor, textShadow: `0 0 10px ${gradeColor}` }}
+              initial={{ opacity: 0, scale: 0.5 }}
+              animate={{ opacity: revealed ? 1 : 0, scale: revealed ? 1 : 0.5 }}
+              transition={{ duration: 0.5, delay: revealed ? 0 : 0, ease: 'backOut' }}
+            >
+              {grade.grade.toFixed(1)}
+            </motion.span>
+          </div>
+
+          {/* Row 2: GRADEVAULTAI brand */}
+          <div className="text-center my-[5px]">
+            <div
+              className="text-[13px] font-black uppercase tracking-[0.2em]"
+              style={{
+                color: '#7cc6ff',
+                textShadow: '0 0 12px rgba(124,198,255,0.6), 0 0 24px rgba(124,198,255,0.2)',
+                fontFamily: 'monospace',
+              }}
+            >
+              GRADEVAULTAI
+            </div>
+          </div>
+
+          {/* Row 3: card name */}
+          <div
+            className="text-center font-mono text-[8px] truncate mb-[6px]"
+            style={{ color: 'rgba(255,255,255,0.55)', letterSpacing: '0.05em' }}
+          >
+            {(cardName || 'TRADING CARD').toUpperCase()}
+          </div>
+
+          {/* Barcode */}
+          <div className="flex gap-px justify-center mb-[4px]">
+            {[2,1,2,1,1,2,1,3,1,2,1,1,2,1,2,1,1,2,3,1].map((w, i) => (
+              <div
+                key={i}
+                className="bg-white/35"
+                style={{ width: `${w}px`, height: '11px' }}
+              />
+            ))}
+          </div>
+
+          {/* Serial */}
+          <div className="text-center font-mono text-[7px] text-white/30 tracking-widest">
+            {serial}
+          </div>
+        </div>
+
+        {/* === CARD WINDOW === */}
+        <div
+          className="relative rounded-b-lg overflow-hidden"
+          style={{
+            background: '#040508',
+            aspectRatio: '2.5 / 3.5',
+            border: '1px solid rgba(255,255,255,0.04)',
+          }}
+        >
+          {/* Mystery state: animated shimmer + "?" */}
+          <AnimatePresence>
+            {!revealed && (
+              <motion.div
+                className="absolute inset-0 flex flex-col items-center justify-center"
+                exit={{ opacity: 0 }}
+                transition={{ duration: 0.35 }}
+              >
+                {/* Scan lines texture */}
+                <div
+                  className="absolute inset-0 opacity-20"
+                  style={{
+                    backgroundImage: 'repeating-linear-gradient(0deg, transparent, transparent 3px, rgba(124,198,255,0.06) 3px, rgba(124,198,255,0.06) 4px)',
+                  }}
+                />
+                {/* Shimmer sweep */}
+                <motion.div
+                  className="absolute inset-0"
+                  style={{
+                    background: 'linear-gradient(105deg, transparent 35%, rgba(124,198,255,0.07) 50%, transparent 65%)',
+                  }}
+                  animate={{ x: ['-100%', '200%'] }}
+                  transition={{ duration: 2.2, repeat: Infinity, ease: 'linear', repeatDelay: 0.8 }}
+                />
+                {/* Question mark */}
+                <motion.div
+                  animate={{ opacity: [0.25, 0.55, 0.25] }}
+                  transition={{ duration: 2.5, repeat: Infinity, ease: 'easeInOut' }}
+                  style={{ color: 'rgba(124,198,255,0.4)', fontSize: '72px', fontWeight: 900, lineHeight: 1 }}
+                >
+                  ?
+                </motion.div>
+                <div
+                  className="mt-3 text-[9px] font-mono uppercase tracking-widest"
+                  style={{ color: 'rgba(124,198,255,0.25)' }}
+                >
+                  Analyzing...
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
+
+          {/* Revealed card image */}
+          {frontPreview && (
+            <motion.img
+              src={frontPreview}
+              alt="Card front"
+              className="absolute inset-0 w-full h-full"
+              style={{ objectFit: 'contain', objectPosition: 'center' }}
+              initial={{ opacity: 0, y: -18, scale: 1.06 }}
+              animate={{ opacity: revealed ? 1 : 0, y: revealed ? 0 : -18, scale: revealed ? 1 : 1.06 }}
+              transition={{ duration: 0.55, ease: 'easeOut' }}
+            />
+          )}
+
+          {/* Border scan lines after reveal */}
+          {revealed && (
+            <motion.div
+              className="absolute inset-0 pointer-events-none"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: [0, 0.7, 0] }}
+              transition={{ duration: 1.2, delay: 0.3 }}
+            >
+              <div
+                className="absolute inset-0 rounded"
+                style={{ border: `1px solid ${gradeColor}`, boxShadow: `inset 0 0 12px ${gradeColor}30` }}
+              />
+            </motion.div>
+          )}
+        </div>
+      </div>
+
+      {/* Holographic corner sticker (top-right) */}
+      <motion.div
+        className="absolute -top-1 -right-1 w-9 h-9 rounded-full flex items-center justify-center text-[8px] font-black"
+        style={{
+          background: 'conic-gradient(from 0deg, #ff6b6b, #ffd700, #7cc6ff, #a78bfa, #ff6b6b)',
+          border: '1px solid rgba(255,255,255,0.3)',
+          boxShadow: '0 2px 8px rgba(0,0,0,0.5)',
+          color: 'rgba(0,0,0,0.7)',
+        }}
+        initial={{ opacity: 0, scale: 0, rotate: -90 }}
+        animate={{ opacity: 1, scale: 1, rotate: 0 }}
+        transition={{ duration: 0.5, delay: 0.3, ease: 'backOut' }}
+      >
+        AI
+      </motion.div>
+    </div>
+  )
+}
+
+function PackOpeningAnimation({
+  grade,
+  frontPreview,
+  cardName,
+  onComplete,
+}: {
+  grade: GradeResult
+  frontPreview: string | null
+  cardName: string
+  onComplete: () => void
+}) {
+  // revealed = card image is showing in the slab
+  const [revealed, setRevealed] = useState(false)
+
   return (
     <motion.div
-      className="fixed inset-0 z-50 bg-black flex items-center justify-center"
+      className="fixed inset-0 z-50 flex items-center justify-center"
+      style={{ background: 'radial-gradient(ellipse at center, #0a0f1e 0%, #050508 100%)' }}
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
     >
-      {/* Stars background */}
+      {/* Particle stars */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        {[...Array(30)].map((_, i) => (
+        {[...Array(40)].map((_, i) => (
           <motion.div
             key={i}
-            className="absolute w-1 h-1 bg-white rounded-full"
+            className="absolute rounded-full bg-white"
             style={{
-              left: `${Math.random() * 100}%`,
-              top: `${Math.random() * 100}%`,
+              left: `${(i * 37 + 11) % 100}%`,
+              top: `${(i * 53 + 7) % 100}%`,
+              width: i % 4 === 0 ? '2px' : '1px',
+              height: i % 4 === 0 ? '2px' : '1px',
             }}
             initial={{ opacity: 0, scale: 0 }}
-            animate={{ opacity: [0, 1, 0], scale: [0, 1, 0] }}
+            animate={{ opacity: [0, 0.8, 0], scale: [0, 1, 0] }}
             transition={{
-              duration: 2,
-              delay: 1.5 + Math.random() * 1.5,
+              duration: 2.5,
+              delay: 0.8 + (i * 0.07),
               repeat: Infinity,
-              repeatDelay: Math.random() * 3,
+              repeatDelay: 1 + (i % 5) * 0.4,
             }}
           />
         ))}
       </div>
 
-      <div className="flex flex-col items-center gap-8 relative">
-        {/* Pack */}
+      {/* Light burst on reveal */}
+      <motion.div
+        className="absolute pointer-events-none rounded-full"
+        style={{ background: 'radial-gradient(circle, rgba(124,198,255,0.25) 0%, transparent 70%)', width: 400, height: 400 }}
+        initial={{ scale: 0, opacity: 0 }}
+        animate={{ scale: [0, 2.5, 0], opacity: [0, 1, 0] }}
+        transition={{ duration: 1, delay: 1.5 }}
+        onAnimationComplete={() => setRevealed(true)}
+      />
+
+      <div className="flex flex-col items-center gap-10 relative">
+        {/* Slab */}
         <motion.div
-          className="w-32 h-44 bg-gradient-to-b from-[#e63946] to-[#ffd700] rounded-xl flex items-center justify-center text-6xl shadow-2xl border-2 border-white/10"
-          initial={{ scale: 0.5, opacity: 0, y: 40 }}
+          initial={{ scale: 0.55, opacity: 0, y: 50 }}
           animate={{ scale: 1, opacity: 1, y: 0 }}
-          transition={{ duration: 0.6, ease: 'backOut' }}
+          transition={{ duration: 0.75, ease: 'backOut' }}
         >
-          ⚡
+          <GradeVaultSlab
+            grade={grade}
+            frontPreview={frontPreview}
+            cardName={cardName}
+            revealed={revealed}
+          />
         </motion.div>
 
-        {/* Tear effect */}
+        {/* Grade badge below slab */}
         <motion.div
-          className="absolute inset-0 pointer-events-none"
-          initial={{ opacity: 0 }}
-          animate={{ opacity: [0, 1, 0] }}
-          transition={{ duration: 0.4, delay: 1.2 }}
-        >
-          <div className="absolute inset-0 bg-white/10 rounded-xl" />
-        </motion.div>
-
-        {/* Card reveal */}
-        <motion.div
-          className="absolute"
-          initial={{ opacity: 0, scale: 0.8, rotateY: 180 }}
-          animate={{ opacity: 1, scale: 1, rotateY: 0 }}
-          transition={{ duration: 0.8, delay: 1.6, ease: 'backOut' }}
-        >
-          <div className="w-40 h-56 bg-gradient-to-b from-[#1a1a1a] to-[#0d0d0d] rounded-xl border border-[#333] flex items-center justify-center text-7xl shadow-2xl">
-            🎴
-          </div>
-        </motion.div>
-
-        {/* Light burst */}
-        <motion.div
-          className="absolute w-64 h-64 rounded-full"
-          style={{
-            background: 'radial-gradient(circle, rgba(255,215,0,0.3) 0%, transparent 70%)',
-          }}
-          initial={{ scale: 0, opacity: 0 }}
-          animate={{ scale: [0, 2, 0], opacity: [0, 1, 0] }}
-          transition={{ duration: 0.8, delay: 1.4 }}
-        />
-
-        {/* Grade badge reveal */}
-        <motion.div
-          className="absolute -top-10 right-0"
-          initial={{ opacity: 0, scale: 0, y: 20 }}
-          animate={{ opacity: 1, scale: 1, y: 0 }}
-          transition={{ duration: 0.6, delay: 2.4, ease: 'backOut' }}
+          initial={{ opacity: 0, y: 16, scale: 0.6 }}
+          animate={{ opacity: revealed ? 1 : 0, y: revealed ? 0 : 16, scale: revealed ? 1 : 0.6 }}
+          transition={{ duration: 0.5, delay: 0.5, ease: 'backOut' }}
         >
           <GradeBadge grade={grade.grade} size="xl" />
         </motion.div>
 
         {/* Continue button */}
         <motion.button
-          className="mt-60 px-8 py-4 bg-[#e63946] hover:bg-[#c1121f] text-white font-bold rounded-xl text-lg transition-colors"
-          initial={{ opacity: 0, y: 20 }}
+          className="px-10 py-4 font-bold rounded-xl text-lg text-[#0b0f1e] transition-opacity"
+          style={{ background: 'linear-gradient(135deg, #7cc6ff, #a78bfa)' }}
+          initial={{ opacity: 0, y: 12 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 3 }}
+          transition={{ delay: 4 }}
           onClick={onComplete}
         >
           See Full Breakdown →
@@ -304,6 +521,8 @@ export default function GradePage() {
         {step === 'animating' && gradeResult && (
           <PackOpeningAnimation
             grade={gradeResult}
+            frontPreview={frontPreview}
+            cardName={cardName}
             onComplete={() => setStep('result')}
           />
         )}
