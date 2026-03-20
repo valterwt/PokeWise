@@ -295,7 +295,10 @@ export default function GradePage() {
   return (
     <div className="min-h-screen px-4 py-12">
       {showAuthModal && (
-        <AuthModal onClose={() => setShowAuthModal(false)} />
+        <AuthModal
+          onClose={() => setShowAuthModal(false)}
+          onSuccess={() => { setShowAuthModal(false); handleSubmit() }}
+        />
       )}
       <AnimatePresence>
         {step === 'animating' && gradeResult && (
