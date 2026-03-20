@@ -202,7 +202,7 @@ export default function GradePage() {
 
     try {
       const res = await fetch('/api/grade', { method: 'POST', body: formData })
-      let data: { error?: string } & Record<string, unknown> = {}
+      let data: (GradeResult & { error?: string }) | { error?: string } = {}
       try {
         data = await res.json()
       } catch {
@@ -218,7 +218,7 @@ export default function GradePage() {
         return
       }
       if (!res.ok) throw new Error(data.error || 'Grading failed')
-      setGradeResult(data)
+      setGradeResult(data as GradeResult)
       setStep('animating')
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Something went wrong')
