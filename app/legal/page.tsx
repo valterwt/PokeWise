@@ -78,14 +78,8 @@ export default function LegalPage() {
             <Link
               key={doc.href}
               href={doc.href}
-              className="group rounded-2xl p-6 transition-all block"
+              className="group rounded-2xl p-6 transition-all block hover:[border-color:rgba(124,198,255,0.25)]"
               style={{ background: '#0e1223', border: '1px solid rgba(255,255,255,0.07)' }}
-              onMouseEnter={(e) => {
-                ;(e.currentTarget as HTMLElement).style.borderColor = 'rgba(124,198,255,0.25)'
-              }}
-              onMouseLeave={(e) => {
-                ;(e.currentTarget as HTMLElement).style.borderColor = 'rgba(255,255,255,0.07)'
-              }}
             >
               <div className="flex items-start justify-between gap-3 mb-3">
                 <div className="flex items-center gap-3">
