@@ -421,7 +421,8 @@ export default function GradePage() {
             </button>
 
             <p className="text-center text-xs text-gray-600 mt-4">
-              Your card images are analyzed by Claude AI and not stored without your permission.
+              Your card images are analyzed by Claude AI and not stored without your permission.{' '}
+              <a href="/ai-disclosure" className="underline hover:text-gray-400 transition-colors">AI disclosure</a>
             </p>
           </motion.div>
         )}
