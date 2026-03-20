@@ -1,13 +1,16 @@
 'use client'
 
-import { useState, useCallback, useMemo } from 'react'
+import { useState, useCallback, useMemo, useRef } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
+import ReactCrop, { centerCrop, makeAspectCrop, convertToPixelCrop, type Crop, type PixelCrop } from 'react-image-crop'
+import 'react-image-crop/dist/ReactCrop.css'
 import GradeBadge from '@/components/GradeBadge'
 import AuthModal from '@/components/AuthModal'
 import { useAuth } from '@/lib/auth-context'
 import type { GradeResult } from '@/types/database'
 
-type Step = 'upload' | 'animating' | 'result'
+type Step = 'upload' | 'crop' | 'animating' | 'result'
+type AuthIntent = 'grade' | 'save'
 
 function SubScoreBar({ label, value }: { label: string; value: number }) {
   const pct = (value / 10) * 100
@@ -465,6 +468,13 @@ export default function GradePage() {
   const [saving, setSaving] = useState(false)
   const [saveError, setSaveError] = useState<string | null>(null)
   const [showAuthModal, setShowAuthModal] = useState(false)
+  const [authIntent, setAuthIntent] = useState<AuthIntent>('grade')
+
+  // Crop state
+  const [rawFrontSrc, setRawFrontSrc] = useState<string | null>(null)
+  const [rawFrontFile, setRawFrontFile] = useState<File | null>(null)
+  const [crop, setCrop] = useState<Crop>({ unit: '%', width: 100, height: 100, x: 0, y: 0 })
+  const cropImgRef = useRef<HTMLImageElement>(null)
 
   const MAX_BYTES = 1_048_576 // 1 MB — stays well under Next.js / Anthropic limits
   const MAX_DIM   = 1500     // longest side in pixels
@@ -504,24 +514,74 @@ export default function GradePage() {
       img.src = objectUrl
     })
 
-  // Keep the old name so nothing else needs to change
-  const convertToJpeg = prepareImage
-
   const handleFile = useCallback(async (file: File, side: 'front' | 'back') => {
-    const jpeg = await convertToJpeg(file)
+    if (side === 'front') {
+      // Go to crop step first; processing happens after crop confirmation
+      setRawFrontFile(file)
+      setRawFrontSrc(URL.createObjectURL(file))
+      // Default crop: full image selected
+      setCrop({ unit: '%', width: 100, height: 100, x: 0, y: 0 })
+      setStep('crop')
+      return
+    }
+    // Back image: no crop step, just resize
+    const jpeg = await prepareImage(file)
     const reader = new FileReader()
     reader.onload = (e) => {
-      const url = e.target?.result as string
-      if (side === 'front') {
-        setFrontFile(jpeg)
-        setFrontPreview(url)
-      } else {
-        setBackFile(jpeg)
-        setBackPreview(url)
-      }
+      setBackFile(jpeg)
+      setBackPreview(e.target?.result as string)
     }
     reader.readAsDataURL(jpeg)
+  }, [prepareImage])
+
+  const onCropImageLoad = useCallback((e: React.SyntheticEvent<HTMLImageElement>) => {
+    const { width, height } = e.currentTarget
+    // Default: full image selected, centered
+    const initial = centerCrop(
+      makeAspectCrop({ unit: '%', width: 100 }, width / height, width, height),
+      width, height,
+    )
+    setCrop(initial)
   }, [])
+
+  const finishCrop = useCallback(async (applyCropArea: boolean) => {
+    if (!rawFrontFile) return
+    let fileToProcess = rawFrontFile
+
+    if (applyCropArea && cropImgRef.current) {
+      const img = cropImgRef.current
+      const pixelCrop: PixelCrop = convertToPixelCrop(crop, img.width, img.height)
+      const scaleX = img.naturalWidth / img.width
+      const scaleY = img.naturalHeight / img.height
+
+      const canvas = document.createElement('canvas')
+      canvas.width  = Math.round(pixelCrop.width  * scaleX)
+      canvas.height = Math.round(pixelCrop.height * scaleY)
+      canvas.getContext('2d')!.drawImage(
+        img,
+        Math.round(pixelCrop.x * scaleX),
+        Math.round(pixelCrop.y * scaleY),
+        canvas.width, canvas.height,
+        0, 0, canvas.width, canvas.height,
+      )
+      const blob: Blob = await new Promise((res) => canvas.toBlob((b) => res(b!), 'image/jpeg', 0.95))
+      fileToProcess = new File([blob], rawFrontFile.name.replace(/\.[^.]+$/, '.jpg'), { type: 'image/jpeg' })
+    }
+
+    const jpeg = await prepareImage(fileToProcess)
+    const reader = new FileReader()
+    reader.onload = (e) => {
+      setFrontFile(jpeg)
+      setFrontPreview(e.target?.result as string)
+    }
+    reader.readAsDataURL(jpeg)
+
+    // Clean up
+    URL.revokeObjectURL(rawFrontSrc!)
+    setRawFrontSrc(null)
+    setRawFrontFile(null)
+    setStep('upload')
+  }, [rawFrontFile, rawFrontSrc, crop, prepareImage])
 
   const handleDrop = useCallback((e: React.DragEvent, side: 'front' | 'back') => {
     e.preventDefault()
@@ -552,6 +612,7 @@ export default function GradePage() {
         throw new Error(`Server error (${res.status})`)
       }
       if (res.status === 401) {
+        setAuthIntent('grade')
         setShowAuthModal(true)
         return
       }
@@ -579,11 +640,14 @@ export default function GradePage() {
     setCardName('')
     setError(null)
     setSaveError(null)
+    if (rawFrontSrc) { URL.revokeObjectURL(rawFrontSrc); setRawFrontSrc(null) }
+    setRawFrontFile(null)
   }
 
   const saveToBinder = async () => {
     if (!gradeResult || !frontFile) return
     if (!user) {
+      setAuthIntent('save')
       setShowAuthModal(true)
       return
     }
@@ -618,7 +682,11 @@ export default function GradePage() {
       {showAuthModal && (
         <AuthModal
           onClose={() => setShowAuthModal(false)}
-          onSuccess={() => { setShowAuthModal(false); handleSubmit() }}
+          onSuccess={() => {
+            setShowAuthModal(false)
+            if (authIntent === 'save') saveToBinder()
+            else handleSubmit()
+          }}
         />
       )}
       <AnimatePresence>
@@ -630,14 +698,90 @@ export default function GradePage() {
       </AnimatePresence>
 
       <div className="max-w-2xl mx-auto">
-        {/* Header */}
-        <div className="text-center mb-12">
-          <div className="inline-flex items-center gap-2 bg-[#e63946]/10 border border-[#e63946]/20 text-[#e63946] text-sm font-medium px-4 py-2 rounded-full mb-6">
-            🤖 AI Condition Estimate — PSA-Style 1–10
+        {/* Header — hidden during crop */}
+        {step !== 'crop' && (
+          <div className="text-center mb-12">
+            <div className="inline-flex items-center gap-2 bg-[#e63946]/10 border border-[#e63946]/20 text-[#e63946] text-sm font-medium px-4 py-2 rounded-full mb-6">
+              🤖 AI Condition Estimate — PSA-Style 1–10
+            </div>
+            <h1 className="text-3xl md:text-4xl font-black mb-3">Grade Your Card</h1>
+            <p className="text-gray-400">Upload front and back photos for your AI condition estimate. Results are a guide, not a guarantee — always verify with a professional grader before submitting high-value cards.</p>
           </div>
-          <h1 className="text-3xl md:text-4xl font-black mb-3">Grade Your Card</h1>
-          <p className="text-gray-400">Upload front and back photos for your AI condition estimate. Results are a guide, not a guarantee — always verify with a professional grader before submitting high-value cards.</p>
-        </div>
+        )}
+
+        {/* ── CROP STEP ── */}
+        {step === 'crop' && rawFrontSrc && (
+          <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }}>
+            {/* Step header */}
+            <div className="text-center mb-8">
+              <div className="inline-flex items-center gap-2 bg-[#7cc6ff]/10 border border-[#7cc6ff]/20 text-[#7cc6ff] text-sm font-medium px-4 py-2 rounded-full mb-4">
+                ✂️ Step 1 of 2 — Crop Image
+              </div>
+              <h2 className="text-2xl font-black mb-2">Crop Your Card Image</h2>
+              <p className="text-gray-400 text-sm max-w-md mx-auto">
+                Drag the handles to select just the card, or zoom into the Pokemon artwork. This is what the AI will analyze.
+              </p>
+            </div>
+
+            {/* Card name (collect here so user doesn't have to go back) */}
+            <div className="mb-5">
+              <label className="text-sm font-medium text-gray-400 mb-2 block">Card Name <span className="text-gray-600">(optional)</span></label>
+              <input
+                type="text"
+                placeholder="e.g. Charizard Base Set"
+                value={cardName}
+                onChange={(e) => setCardName(e.target.value)}
+                className="w-full bg-[#141414] border border-[#2a2a2a] rounded-xl px-4 py-3 text-white placeholder-gray-600 focus:outline-none focus:border-[#7cc6ff] transition-colors"
+              />
+            </div>
+
+            {/* Crop area */}
+            <div
+              className="rounded-2xl overflow-hidden mb-2"
+              style={{
+                background: '#0a0a0a',
+                border: '1px solid #2a2a2a',
+                maxHeight: '60vh',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+              }}
+            >
+              <ReactCrop
+                crop={crop}
+                onChange={(c) => setCrop(c)}
+                style={{ maxHeight: '60vh', maxWidth: '100%' }}
+              >
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  ref={cropImgRef}
+                  src={rawFrontSrc}
+                  alt="Crop preview"
+                  onLoad={onCropImageLoad}
+                  style={{ maxHeight: '60vh', maxWidth: '100%', display: 'block' }}
+                />
+              </ReactCrop>
+            </div>
+            <p className="text-xs text-gray-600 text-center mb-6">Click and drag to adjust the crop selection</p>
+
+            {/* Action buttons */}
+            <div className="grid grid-cols-2 gap-3">
+              <button
+                onClick={() => finishCrop(false)}
+                className="py-4 bg-white/5 hover:bg-white/10 border border-white/10 text-white font-semibold rounded-xl transition-colors text-sm"
+              >
+                Use Full Image
+              </button>
+              <button
+                onClick={() => finishCrop(true)}
+                className="py-4 font-bold rounded-xl text-sm transition-all hover:opacity-90"
+                style={{ background: 'linear-gradient(135deg, #7cc6ff, #a78bfa)', color: '#0b0f1e' }}
+              >
+                ✓ Apply Crop → Step 2
+              </button>
+            </div>
+          </motion.div>
+        )}
 
         {step === 'upload' && !user && (
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
