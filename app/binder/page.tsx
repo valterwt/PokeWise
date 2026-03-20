@@ -1,12 +1,22 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { motion } from 'framer-motion'
+import { motion, AnimatePresence } from 'framer-motion'
 import Link from 'next/link'
 import GradeBadge from '@/components/GradeBadge'
 import AuthModal from '@/components/AuthModal'
 import { useAuth } from '@/lib/auth-context'
 import { supabase } from '@/lib/supabase'
+
+type GradeRow = {
+  overall: number
+  centering: number
+  corners: number
+  edges: number
+  surface: number
+  summary: string
+  recommendation: string
+}
 
 type CardRow = {
   id: string
@@ -14,91 +24,220 @@ type CardRow = {
   front_image_url: string
   back_image_url: string | null
   created_at: string
-  grades: {
-    overall: number
-    centering: number
-    corners: number
-    edges: number
-    surface: number
-    summary: string
-    recommendation: string
-  } | null
+  // Supabase returns one-to-many as an array; we always take [0]
+  grades: GradeRow[] | null
 }
 
 type SortOption = 'date_desc' | 'date_asc' | 'grade_desc' | 'grade_asc'
 
-function BinderCard({ card, index }: { card: CardRow; index: number }) {
-  const [expanded, setExpanded] = useState(false)
-  const grade = card.grades?.overall ?? 0
+function ScoreBar({ label, value }: { label: string; value: number }) {
+  const pct = (value / 10) * 100
+  const color = value >= 9 ? '#ffd700' : value >= 7 ? '#22c55e' : value >= 5 ? '#eab308' : '#e63946'
+  return (
+    <div>
+      <div className="flex justify-between text-xs mb-1">
+        <span className="text-gray-400">{label}</span>
+        <span className="font-bold" style={{ color }}>{value.toFixed(1)}</span>
+      </div>
+      <div className="h-1.5 bg-[#1a1a1a] rounded-full overflow-hidden">
+        <motion.div
+          className="h-full rounded-full"
+          style={{ backgroundColor: color }}
+          initial={{ width: 0 }}
+          animate={{ width: `${pct}%` }}
+          transition={{ duration: 0.7, delay: 0.1, ease: 'easeOut' }}
+        />
+      </div>
+    </div>
+  )
+}
+
+function CardDetailModal({ card, onClose }: { card: CardRow; onClose: () => void }) {
+  const g = card.grades?.[0] ?? null
+  const grade = g?.overall ?? 0
+  const gradeColor = grade >= 9 ? '#ffd700' : grade >= 7 ? '#22c55e' : grade >= 5 ? '#eab308' : '#e63946'
+  const gradeLabel =
+    grade >= 9.5 ? 'GEM-MT' : grade >= 9 ? 'MINT' : grade >= 8 ? 'NM-MT' :
+    grade >= 7 ? 'NM' : grade >= 6 ? 'EX-NM' : grade >= 5 ? 'EX' :
+    grade >= 4 ? 'VG-EX' : 'VG'
+  const gradeName =
+    grade >= 9.5 ? 'Gem Mint' : grade >= 9 ? 'Mint' : grade >= 8 ? 'Near Mint–Mint' :
+    grade >= 7 ? 'Near Mint' : grade >= 6 ? 'Excellent–Near Mint' : grade >= 5 ? 'Excellent' :
+    grade >= 4 ? 'Very Good–Excellent' : grade >= 3 ? 'Very Good' : grade >= 2 ? 'Good' : 'Poor'
 
   return (
     <motion.div
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ delay: index * 0.05 }}
-      className={`bg-[#141414] border-2 rounded-2xl overflow-hidden cursor-pointer transition-all hover:-translate-y-1 ${
-        grade >= 9 ? 'border-[#ffd700]/40 grade-glow-gold' :
-        grade >= 7 ? 'border-green-500/40 grade-glow-green' :
-        grade >= 5 ? 'border-yellow-500/40 grade-glow-yellow' :
-        'border-red-600/40 grade-glow-red'
-      }`}
-      onClick={() => setExpanded(!expanded)}
+      className="fixed inset-0 z-[200] flex items-center justify-center p-4"
+      style={{ background: 'rgba(0,0,0,0.8)', backdropFilter: 'blur(6px)' }}
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      onClick={onClose}
     >
-      {/* Card image */}
-      <div className="relative h-48 bg-gradient-to-b from-[#1a1a1a] to-[#111] flex items-center justify-center">
-        {card.front_image_url ? (
-          // eslint-disable-next-line @next/next/no-img-element
-          <img src={card.front_image_url} alt={card.card_name} className="h-full w-full object-contain p-3" />
-        ) : (
-          <span className="text-6xl opacity-40">🎴</span>
-        )}
-        <div className="absolute top-3 right-3">
-          <GradeBadge grade={grade} size="md" />
-        </div>
-      </div>
-
-      {/* Card info */}
-      <div className="p-4">
-        <h3 className="font-bold text-sm mb-1 truncate">{card.card_name}</h3>
-        <div className="text-xs text-gray-500">
-          Graded {new Date(card.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
-        </div>
-      </div>
-
-      {/* Expanded breakdown */}
-      {expanded && card.grades && (
-        <motion.div
-          initial={{ height: 0, opacity: 0 }}
-          animate={{ height: 'auto', opacity: 1 }}
-          className="px-4 pb-4 border-t border-[#1e1e1e] pt-3"
+      <motion.div
+        className="relative w-full max-w-md rounded-2xl overflow-hidden"
+        style={{
+          background: 'linear-gradient(135deg, #111827, #0f172a)',
+          border: '1px solid rgba(124,198,255,0.15)',
+          boxShadow: '0 25px 60px rgba(0,0,0,0.7)',
+          maxHeight: '90vh',
+          overflowY: 'auto',
+        }}
+        initial={{ scale: 0.92, opacity: 0, y: 20 }}
+        animate={{ scale: 1, opacity: 1, y: 0 }}
+        exit={{ scale: 0.92, opacity: 0 }}
+        transition={{ duration: 0.22, ease: 'easeOut' }}
+        onClick={(e) => e.stopPropagation()}
+      >
+        {/* Close */}
+        <button
+          onClick={onClose}
+          className="absolute top-3 right-3 z-10 w-8 h-8 flex items-center justify-center rounded-full transition-colors"
+          style={{ color: '#9fb0ff', background: 'rgba(255,255,255,0.07)' }}
         >
-          <div className="text-xs text-gray-500 mb-3">Full Breakdown</div>
-          <div className="grid grid-cols-2 gap-2 text-xs">
-            {([
-              ['Centering', card.grades.centering],
-              ['Corners',   card.grades.corners],
-              ['Edges',     card.grades.edges],
-              ['Surface',   card.grades.surface],
-            ] as [string, number][]).map(([label, val]) => (
-              <div key={label} className="flex justify-between bg-[#1a1a1a] rounded-lg px-3 py-2">
-                <span className="text-gray-500">{label}</span>
-                <span className="font-bold text-[#ffd700]">{val.toFixed(1)}</span>
-              </div>
-            ))}
-          </div>
-          {card.grades.summary && (
-            <p className="mt-3 text-xs text-gray-500 leading-relaxed line-clamp-3">{card.grades.summary}</p>
+          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+          </svg>
+        </button>
+
+        {/* Card image */}
+        <div className="relative bg-gradient-to-b from-[#1a1a2e] to-[#0f0f1a] flex items-center justify-center"
+          style={{ minHeight: 220 }}>
+          {card.front_image_url ? (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img src={card.front_image_url} alt={card.card_name}
+              className="w-full object-contain" style={{ maxHeight: 260 }} />
+          ) : (
+            <span className="text-7xl opacity-30 py-12">🎴</span>
           )}
+          {/* Grade badge overlay */}
+          <div className="absolute bottom-3 right-3">
+            <GradeBadge grade={grade} size="lg" />
+          </div>
+        </div>
+
+        {/* Content */}
+        <div className="p-6 space-y-5">
+          {/* Header */}
+          <div>
+            <h2 className="text-lg font-black mb-0.5">{card.card_name}</h2>
+            <div className="text-xs text-gray-500">
+              Graded {new Date(card.created_at).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}
+            </div>
+          </div>
+
+          {/* Overall grade */}
+          <div
+            className="flex items-center justify-between rounded-xl px-5 py-4"
+            style={{
+              background: `linear-gradient(135deg, ${gradeColor}15, ${gradeColor}08)`,
+              border: `1px solid ${gradeColor}30`,
+            }}
+          >
+            <div>
+              <div className="text-xs text-gray-400 mb-0.5 uppercase tracking-wider">GradeVaultAI Score</div>
+              <div className="text-2xl font-black" style={{ color: gradeColor }}>{grade.toFixed(1)}</div>
+              <div className="text-sm font-semibold text-white/80">{gradeName}</div>
+            </div>
+            <div
+              className="text-xs font-bold px-3 py-1.5 rounded-full"
+              style={{ background: `${gradeColor}20`, color: gradeColor, border: `1px solid ${gradeColor}40` }}
+            >
+              {gradeLabel}
+            </div>
+          </div>
+
+          {/* Sub-scores */}
+          {g && (
+            <div className="space-y-3">
+              <div className="text-xs font-semibold text-gray-400 uppercase tracking-wider">Grade Breakdown</div>
+              <ScoreBar label="Centering" value={g.centering} />
+              <ScoreBar label="Corners"   value={g.corners} />
+              <ScoreBar label="Edges"     value={g.edges} />
+              <ScoreBar label="Surface"   value={g.surface} />
+            </div>
+          )}
+
+          {/* AI summary */}
+          {g?.summary && (
+            <div
+              className="rounded-xl p-4"
+              style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.07)' }}
+            >
+              <div className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">AI Condition Report</div>
+              <p className="text-sm text-gray-300 leading-relaxed">{g.summary}</p>
+            </div>
+          )}
+
+          {/* Recommendation */}
+          {g?.recommendation && (
+            <div
+              className="rounded-xl p-4"
+              style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.07)' }}
+            >
+              <div className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">Worth Professional Grading?</div>
+              <p className="text-sm text-gray-300 leading-relaxed">{g.recommendation}</p>
+            </div>
+          )}
+
           <Link
             href="/grade"
-            className="mt-3 block text-center text-xs text-[#e63946] hover:text-[#c1121f] transition-colors"
-            onClick={(e) => e.stopPropagation()}
+            className="block text-center py-3 rounded-xl text-sm font-semibold transition-colors"
+            style={{ background: 'rgba(230,57,70,0.12)', border: '1px solid rgba(230,57,70,0.25)', color: '#e63946' }}
           >
             Grade Another Card →
           </Link>
-        </motion.div>
-      )}
+        </div>
+      </motion.div>
     </motion.div>
+  )
+}
+
+function BinderCard({ card, index }: { card: CardRow; index: number }) {
+  const [open, setOpen] = useState(false)
+  // grades is an array from Supabase — take the first entry
+  const grade = card.grades?.[0]?.overall ?? 0
+
+  return (
+    <>
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: index * 0.05 }}
+        className={`bg-[#141414] border-2 rounded-2xl overflow-hidden cursor-pointer transition-all hover:-translate-y-1 ${
+          grade >= 9 ? 'border-[#ffd700]/40 grade-glow-gold' :
+          grade >= 7 ? 'border-green-500/40 grade-glow-green' :
+          grade >= 5 ? 'border-yellow-500/40 grade-glow-yellow' :
+          'border-red-600/40 grade-glow-red'
+        }`}
+        onClick={() => setOpen(true)}
+      >
+        {/* Card image */}
+        <div className="relative h-48 bg-gradient-to-b from-[#1a1a1a] to-[#111] flex items-center justify-center">
+          {card.front_image_url ? (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img src={card.front_image_url} alt={card.card_name} className="h-full w-full object-contain p-3" />
+          ) : (
+            <span className="text-6xl opacity-40">🎴</span>
+          )}
+          <div className="absolute top-3 right-3">
+            <GradeBadge grade={grade} size="md" />
+          </div>
+        </div>
+
+        {/* Card info */}
+        <div className="p-4">
+          <h3 className="font-bold text-sm mb-1 truncate">{card.card_name}</h3>
+          <div className="text-xs text-gray-500">
+            {new Date(card.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
+          </div>
+        </div>
+      </motion.div>
+
+      <AnimatePresence>
+        {open && <CardDetailModal card={card} onClose={() => setOpen(false)} />}
+      </AnimatePresence>
+    </>
   )
 }
 
@@ -134,7 +273,7 @@ export default function BinderPage() {
 
   const filteredCards = cards
     .filter((c) => {
-      const grade = c.grades?.overall ?? 0
+      const grade = c.grades?.[0]?.overall ?? 0
       if (filterGrade === 'gem' && grade < 9) return false
       if (filterGrade === 'nm' && (grade < 7 || grade >= 9)) return false
       if (filterGrade === 'played' && grade >= 7) return false
@@ -142,15 +281,15 @@ export default function BinderPage() {
       return true
     })
     .sort((a, b) => {
-      const ga = a.grades?.overall ?? 0
-      const gb = b.grades?.overall ?? 0
+      const ga = a.grades?.[0]?.overall ?? 0
+      const gb = b.grades?.[0]?.overall ?? 0
       if (sortBy === 'grade_desc') return gb - ga
       if (sortBy === 'grade_asc') return ga - gb
       if (sortBy === 'date_asc') return new Date(a.created_at).getTime() - new Date(b.created_at).getTime()
       return new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
     })
 
-  const grades = cards.map((c) => c.grades?.overall ?? 0)
+  const grades = cards.map((c) => c.grades?.[0]?.overall ?? 0)
   const avgGrade = grades.length > 0 ? grades.reduce((s, g) => s + g, 0) / grades.length : 0
   const bestGrade = grades.length > 0 ? Math.max(...grades) : 0
 
