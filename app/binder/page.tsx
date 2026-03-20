@@ -285,10 +285,36 @@ export default function BinderPage() {
       .then(({ data, error }) => {
         if (error) {
           setFetchError('Failed to load your cards. Please try again.')
-        } else {
-          setCards((data as unknown as CardRow[]) ?? [])
+          setLoadingCards(false)
+          return
         }
+        const loaded = (data as unknown as CardRow[]) ?? []
+        setCards(loaded)
         setLoadingCards(false)
+
+        // Silently re-identify any "Unknown Card" entries using their stored image
+        const unknown = loaded.filter(
+          (c) => !c.card_name?.trim() || c.card_name.toLowerCase() === 'unknown card'
+        )
+        unknown.forEach((c) => {
+          if (!c.front_image_url) return
+          fetch('/api/identify-card', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ cardId: c.id, imageUrl: c.front_image_url }),
+          })
+            .then((r) => r.json())
+            .then(({ card_name }) => {
+              if (card_name) {
+                setCards((prev) =>
+                  prev.map((card) =>
+                    card.id === c.id ? { ...card, card_name } : card
+                  )
+                )
+              }
+            })
+            .catch(() => {/* silent — display fallback still works */})
+        })
       })
   }, [user])
 
