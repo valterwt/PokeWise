@@ -30,6 +30,26 @@ type CardRow = {
 
 type SortOption = 'date_desc' | 'date_asc' | 'grade_desc' | 'grade_asc'
 
+function gradeLabel(grade: number): string {
+  if (grade >= 9.5) return 'Gem Mint'
+  if (grade >= 9)   return 'Mint'
+  if (grade >= 8)   return 'NM-MT'
+  if (grade >= 7)   return 'Near Mint'
+  if (grade >= 6)   return 'EX-NM'
+  if (grade >= 5)   return 'Excellent'
+  if (grade >= 4)   return 'VG-EX'
+  if (grade >= 3)   return 'Very Good'
+  if (grade >= 2)   return 'Good'
+  return 'Poor'
+}
+
+function displayName(cardName: string, grade: number | null | undefined): string {
+  const name = cardName?.trim()
+  if (name && name.toLowerCase() !== 'unknown card') return name
+  if (grade != null && grade > 0) return `${gradeLabel(grade)} · ${grade.toFixed(1)}`
+  return 'Graded Card'
+}
+
 function ScoreBar({ label, value }: { label: string; value: number }) {
   const pct = (value / 10) * 100
   const color = value >= 9 ? '#ffd700' : value >= 7 ? '#22c55e' : value >= 5 ? '#eab308' : '#e63946'
@@ -120,7 +140,7 @@ function CardDetailModal({ card, onClose }: { card: CardRow; onClose: () => void
         <div className="p-6 space-y-5">
           {/* Header */}
           <div>
-            <h2 className="text-lg font-black mb-0.5">{card.card_name}</h2>
+            <h2 className="text-lg font-black mb-0.5">{displayName(card.card_name, grade)}</h2>
             <div className="text-xs text-gray-500">
               Graded {new Date(card.created_at).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}
             </div>
@@ -227,7 +247,7 @@ function BinderCard({ card, index }: { card: CardRow; index: number }) {
 
         {/* Card info */}
         <div className="p-4">
-          <h3 className="font-bold text-sm mb-1 truncate">{card.card_name}</h3>
+          <h3 className="font-bold text-sm mb-1 truncate">{displayName(card.card_name, grade)}</h3>
           <div className="text-xs text-gray-500">
             {new Date(card.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
           </div>
