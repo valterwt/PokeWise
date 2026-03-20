@@ -120,29 +120,28 @@ export async function POST(req: NextRequest) {
             ...imageContents,
             {
               type: 'text',
-              text: `You are a professional Pokémon card grader. ${cardNote}
-Analyze the provided card image(s) and grade it on a 1-10 scale using PSA-style criteria.
+              text: `You are a strict, professional Pokémon card grader following PSA standards exactly. ${cardNote}
 
-GRADE 1 CALIBRATION STANDARD (lowest possible score):
-A grade of 1 (Poor/Authentic) is the absolute floor and must be assigned whenever ANY of the following are present:
-- Ripped, torn, or physically broken corners
-- Torn or missing sections of the card (edges, surface, text area)
-- Structural damage where the card is split, bent severely, or punched through
-- Severe water damage causing warping or ink bleed across the full card
-- Cards that are barely identifiable as the original card
-Do NOT grade above 1.0 if the card shows ripped or torn corners/edges. This is a hard rule.
+━━━ CRITICAL RULE — READ FIRST ━━━
+If the card has ANY of the following, the OVERALL grade MUST be 1.0 and corners MUST be 1.0. No exceptions. Do not let centering, surface, or other sub-scores raise the overall above 1:
+  • One or more ripped, torn, or physically split corners
+  • Any torn or missing section of the card border/edge
+  • A hole, punch, or tear through the card surface
+  • The card is split or broken into pieces
 
-Grade criteria:
-- 10 (Gem Mint): Perfect in every way
-- 9 (Mint): Only the slightest imperfection allowed
-- 8 (Near Mint–Mint): Very light wear, excellent centering
-- 7 (Near Mint): Minor handling wear, centering off slightly
-- 6 (Excellent–Near Mint): Light surface wear, slight border scratches
-- 5 (Excellent): Multiple light scratches, minor chipping
-- 4 (Very Good–Excellent): Noticeable wear, some whitening
-- 3 (Very Good): Heavy wear on edges, surface scratches
-- 2 (Good): Major creases, stains, heavily rounded corners (not ripped)
-- 1 (Poor): Ripped/torn corners or edges, missing pieces, structural damage — WORST CONDITION
+A PSA grade of 1 (Poor/Authentic) is a legitimate grade — it means the card is identifiable but structurally damaged. Do NOT round up to 2 or above when structural damage is present.
+
+━━━ GRADE SCALE ━━━
+10 — Gem Mint: Flawless. No visible imperfections under 5× magnification.
+ 9 — Mint: Near perfect. Only the tiniest allowable flaw (e.g. one microscopic corner nick).
+ 8 — Near Mint–Mint: Very light wear. Slight corner wear, excellent centering.
+ 7 — Near Mint: Minor handling wear visible. Centering may be slightly off.
+ 6 — Excellent–Near Mint: Light surface wear, slight border scratches, minor corner rounding.
+ 5 — Excellent: Multiple light scratches, moderate corner rounding, minor chipping.
+ 4 — Very Good–Excellent: Noticeable wear on all edges, heavier corner rounding, surface marks.
+ 3 — Very Good: Heavy wear, edge fraying, significant surface scratches, rounded corners.
+ 2 — Good: Major creases visible, staining, very heavy corner rounding (not ripped or torn).
+ 1 — Poor/Authentic: Structural damage — ripped corners, torn edges, missing pieces. Card is identifiable but damaged beyond normal wear.
 
 Return ONLY a valid JSON object with no additional text:
 {
@@ -169,6 +168,14 @@ Return ONLY a valid JSON object with no additional text:
 
     if (typeof result.grade !== 'number' || result.grade < 1 || result.grade > 10) {
       throw new Error('Invalid grade value from AI')
+    }
+
+    // Server-side safety clamp: if AI scored corners as 1 (structural damage),
+    // the overall grade cannot be above 1 — enforce the hard rule even if the
+    // model slipped and returned a higher overall.
+    if (typeof result.corners === 'number' && result.corners <= 1) {
+      result.grade = 1
+      result.corners = 1
     }
 
     return NextResponse.json(result)

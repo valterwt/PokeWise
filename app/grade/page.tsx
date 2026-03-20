@@ -469,8 +469,9 @@ export default function GradePage() {
   const [authIntent, setAuthIntent] = useState<AuthIntent>('grade')
 
   // Crop state
-  const [rawFrontSrc, setRawFrontSrc] = useState<string | null>(null)
-  const [rawFrontFile, setRawFrontFile] = useState<File | null>(null)
+  const [cropSide, setCropSide] = useState<'front' | 'back'>('front')
+  const [rawCropSrc, setRawCropSrc] = useState<string | null>(null)
+  const [rawCropFile, setRawCropFile] = useState<File | null>(null)
   const [crop, setCrop] = useState<Crop>({ unit: '%', width: 100, height: 100, x: 0, y: 0 })
   const cropImgRef = useRef<HTMLImageElement>(null)
 
@@ -513,24 +514,13 @@ export default function GradePage() {
     })
 
   const handleFile = useCallback(async (file: File, side: 'front' | 'back') => {
-    if (side === 'front') {
-      // Go to crop step first; processing happens after crop confirmation
-      setRawFrontFile(file)
-      setRawFrontSrc(URL.createObjectURL(file))
-      // Default crop: full image selected
-      setCrop({ unit: '%', width: 100, height: 100, x: 0, y: 0 })
-      setStep('crop')
-      return
-    }
-    // Back image: no crop step, just resize
-    const jpeg = await prepareImage(file)
-    const reader = new FileReader()
-    reader.onload = (e) => {
-      setBackFile(jpeg)
-      setBackPreview(e.target?.result as string)
-    }
-    reader.readAsDataURL(jpeg)
-  }, [prepareImage])
+    // Both sides go through the crop step
+    setCropSide(side)
+    setRawCropFile(file)
+    setRawCropSrc(URL.createObjectURL(file))
+    setCrop({ unit: '%', width: 100, height: 100, x: 0, y: 0 })
+    setStep('crop')
+  }, [])
 
   const onCropImageLoad = useCallback((e: React.SyntheticEvent<HTMLImageElement>) => {
     const { width, height } = e.currentTarget
@@ -543,8 +533,8 @@ export default function GradePage() {
   }, [])
 
   const finishCrop = useCallback(async (applyCropArea: boolean) => {
-    if (!rawFrontFile) return
-    let fileToProcess = rawFrontFile
+    if (!rawCropFile) return
+    let fileToProcess = rawCropFile
 
     if (applyCropArea && cropImgRef.current) {
       const img = cropImgRef.current
@@ -563,23 +553,28 @@ export default function GradePage() {
         0, 0, canvas.width, canvas.height,
       )
       const blob: Blob = await new Promise((res) => canvas.toBlob((b) => res(b!), 'image/jpeg', 0.95))
-      fileToProcess = new File([blob], rawFrontFile.name.replace(/\.[^.]+$/, '.jpg'), { type: 'image/jpeg' })
+      fileToProcess = new File([blob], rawCropFile.name.replace(/\.[^.]+$/, '.jpg'), { type: 'image/jpeg' })
     }
 
     const jpeg = await prepareImage(fileToProcess)
     const reader = new FileReader()
     reader.onload = (e) => {
-      setFrontFile(jpeg)
-      setFrontPreview(e.target?.result as string)
+      if (cropSide === 'front') {
+        setFrontFile(jpeg)
+        setFrontPreview(e.target?.result as string)
+      } else {
+        setBackFile(jpeg)
+        setBackPreview(e.target?.result as string)
+      }
     }
     reader.readAsDataURL(jpeg)
 
     // Clean up
-    URL.revokeObjectURL(rawFrontSrc!)
-    setRawFrontSrc(null)
-    setRawFrontFile(null)
+    URL.revokeObjectURL(rawCropSrc!)
+    setRawCropSrc(null)
+    setRawCropFile(null)
     setStep('upload')
-  }, [rawFrontFile, rawFrontSrc, crop, prepareImage])
+  }, [rawCropFile, rawCropSrc, crop, cropSide, prepareImage])
 
   const handleDrop = useCallback((e: React.DragEvent, side: 'front' | 'back') => {
     e.preventDefault()
@@ -588,8 +583,8 @@ export default function GradePage() {
   }, [handleFile])
 
   const handleSubmit = async () => {
-    if (!frontFile) {
-      setError('Please upload the front of your card.')
+    if (!frontFile || !backFile) {
+      setError('Both front and back images are required for an accurate grade.')
       return
     }
     setError(null)
@@ -638,8 +633,8 @@ export default function GradePage() {
     setCardName('')
     setError(null)
     setSaveError(null)
-    if (rawFrontSrc) { URL.revokeObjectURL(rawFrontSrc); setRawFrontSrc(null) }
-    setRawFrontFile(null)
+    if (rawCropSrc) { URL.revokeObjectURL(rawCropSrc); setRawCropSrc(null) }
+    setRawCropFile(null)
   }
 
   const saveToBinder = async () => {
@@ -707,31 +702,37 @@ export default function GradePage() {
           </div>
         )}
 
-        {/* ── CROP STEP ── */}
-        {step === 'crop' && rawFrontSrc && (
+        {/* ── CROP STEP (front or back) ── */}
+        {step === 'crop' && rawCropSrc && (
           <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }}>
             {/* Step header */}
-            <div className="text-center mb-8">
+            <div className="text-center mb-6">
               <div className="inline-flex items-center gap-2 bg-[#7cc6ff]/10 border border-[#7cc6ff]/20 text-[#7cc6ff] text-sm font-medium px-4 py-2 rounded-full mb-4">
-                ✂️ Step 1 of 2 — Crop Image
+                ✂️ Crop {cropSide === 'front' ? 'Front' : 'Back'} Image
               </div>
-              <h2 className="text-2xl font-black mb-2">Crop Your Card Image</h2>
+              <h2 className="text-2xl font-black mb-2">
+                Crop the {cropSide === 'front' ? 'Front' : 'Back'} of Your Card
+              </h2>
               <p className="text-gray-400 text-sm max-w-md mx-auto">
-                Drag the handles to select just the card, or zoom into the Pokemon artwork. This is what the AI will analyze.
+                {cropSide === 'front'
+                  ? 'Select just the card or focus on the artwork. The AI grades exactly what you crop.'
+                  : 'Crop the back of the card cleanly. Both sides are used for the full grade.'}
               </p>
             </div>
 
-            {/* Card name (collect here so user doesn't have to go back) */}
-            <div className="mb-5">
-              <label className="text-sm font-medium text-gray-400 mb-2 block">Card Name <span className="text-gray-600">(optional)</span></label>
-              <input
-                type="text"
-                placeholder="e.g. Charizard Base Set"
-                value={cardName}
-                onChange={(e) => setCardName(e.target.value)}
-                className="w-full bg-[#141414] border border-[#2a2a2a] rounded-xl px-4 py-3 text-white placeholder-gray-600 focus:outline-none focus:border-[#7cc6ff] transition-colors"
-              />
-            </div>
+            {/* Card name — only on front crop */}
+            {cropSide === 'front' && (
+              <div className="mb-5">
+                <label className="text-sm font-medium text-gray-400 mb-2 block">Card Name <span className="text-gray-600">(optional)</span></label>
+                <input
+                  type="text"
+                  placeholder="e.g. Charizard Base Set"
+                  value={cardName}
+                  onChange={(e) => setCardName(e.target.value)}
+                  className="w-full bg-[#141414] border border-[#2a2a2a] rounded-xl px-4 py-3 text-white placeholder-gray-600 focus:outline-none focus:border-[#7cc6ff] transition-colors"
+                />
+              </div>
+            )}
 
             {/* Crop area */}
             <div
@@ -739,7 +740,7 @@ export default function GradePage() {
               style={{
                 background: '#0a0a0a',
                 border: '1px solid #2a2a2a',
-                maxHeight: '60vh',
+                maxHeight: '58vh',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
@@ -748,19 +749,19 @@ export default function GradePage() {
               <ReactCrop
                 crop={crop}
                 onChange={(c) => setCrop(c)}
-                style={{ maxHeight: '60vh', maxWidth: '100%' }}
+                style={{ maxHeight: '58vh', maxWidth: '100%' }}
               >
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img
                   ref={cropImgRef}
-                  src={rawFrontSrc}
+                  src={rawCropSrc}
                   alt="Crop preview"
                   onLoad={onCropImageLoad}
-                  style={{ maxHeight: '60vh', maxWidth: '100%', display: 'block' }}
+                  style={{ maxHeight: '58vh', maxWidth: '100%', display: 'block' }}
                 />
               </ReactCrop>
             </div>
-            <p className="text-xs text-gray-600 text-center mb-6">Click and drag to adjust the crop selection</p>
+            <p className="text-xs text-gray-600 text-center mb-5">Drag the corners and edges to adjust the selection</p>
 
             {/* Action buttons */}
             <div className="grid grid-cols-2 gap-3">
@@ -775,7 +776,7 @@ export default function GradePage() {
                 className="py-4 font-bold rounded-xl text-sm transition-all hover:opacity-90"
                 style={{ background: 'linear-gradient(135deg, #7cc6ff, #a78bfa)', color: '#0b0f1e' }}
               >
-                ✓ Apply Crop → Step 2
+                ✓ Apply Crop
               </button>
             </div>
           </motion.div>
@@ -826,61 +827,130 @@ export default function GradePage() {
 
         {step === 'upload' && user && (
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
-            {/* Card name */}
-            <div className="mb-6">
-              <label className="text-sm font-medium text-gray-400 mb-2 block">Card Name (optional)</label>
-              <input
-                type="text"
-                placeholder="e.g. Charizard Base Set"
-                value={cardName}
-                onChange={(e) => setCardName(e.target.value)}
-                className="w-full bg-[#141414] border border-[#2a2a2a] rounded-xl px-4 py-3 text-white placeholder-gray-600 focus:outline-none focus:border-[#e63946] transition-colors"
-              />
+
+            {/* Step progress pills */}
+            <div className="flex items-center justify-center gap-2 mb-8">
+              {[
+                { label: 'Front Image', done: !!frontPreview },
+                { label: 'Back Image', done: !!backPreview },
+                { label: 'Grade', done: false },
+              ].map((s, i, arr) => (
+                <div key={i} className="flex items-center gap-2">
+                  <div className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold border transition-all ${
+                    s.done
+                      ? 'bg-green-500/15 border-green-500/30 text-green-400'
+                      : 'bg-white/5 border-white/10 text-gray-500'
+                  }`}>
+                    {s.done ? '✓' : `${i + 1}`} {s.label}
+                  </div>
+                  {i < arr.length - 1 && <div className="w-4 h-px bg-white/15" />}
+                </div>
+              ))}
             </div>
 
-            {/* Upload areas */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
+            {/* Upload areas — front then back */}
+            <div className="space-y-4 mb-6">
               {(['front', 'back'] as const).map((side) => {
                 const preview = side === 'front' ? frontPreview : backPreview
+                const isDone = !!preview
+                const isBackLocked = side === 'back' && !frontPreview
+
                 return (
-                  <div
-                    key={side}
-                    onDrop={(e) => handleDrop(e, side)}
-                    onDragOver={(e) => e.preventDefault()}
-                    className="relative"
-                  >
-                    <label className="text-sm font-medium text-gray-400 mb-2 block capitalize">
-                      {side} of Card {side === 'front' ? '(required)' : '(recommended)'}
-                    </label>
-                    <label className="cursor-pointer block">
-                      <input
-                        type="file"
-                        accept="image/*"
-                        className="hidden"
-                        onChange={(e) => {
-                          const f = e.target.files?.[0]
-                          if (f) handleFile(f, side)
-                        }}
-                      />
-                      <div className={`border-2 border-dashed rounded-2xl h-52 flex flex-col items-center justify-center transition-all hover:border-[#e63946]/50 hover:bg-[#e63946]/5 ${preview ? 'border-[#e63946]/40' : 'border-[#2a2a2a]'}`}>
-                        {preview ? (
-                          // eslint-disable-next-line @next/next/no-img-element
-                          <img src={preview} alt={side} className="h-full w-full object-contain rounded-2xl p-2" />
-                        ) : (
-                          <>
-                            <div className="text-4xl mb-3">📸</div>
-                            <div className="text-sm text-gray-500 text-center px-4">
-                              Drag & drop or click to upload<br />
-                              <span className="text-xs text-gray-600">JPG, PNG, WEBP</span>
-                            </div>
-                          </>
-                        )}
+                  <div key={side}>
+                    {/* Section header */}
+                    <div className="flex items-center justify-between mb-2">
+                      <div className="flex items-center gap-2">
+                        <span className={`text-sm font-semibold capitalize ${isDone ? 'text-green-400' : 'text-white'}`}>
+                          {isDone ? '✓ ' : ''}{side} of Card
+                        </span>
+                        <span className="text-xs font-bold px-2 py-0.5 rounded-full bg-[#e63946]/15 border border-[#e63946]/25 text-[#e63946]">
+                          Required
+                        </span>
                       </div>
-                    </label>
+                      {isDone && (
+                        <button
+                          onClick={() => side === 'front'
+                            ? (setFrontFile(null), setFrontPreview(null))
+                            : (setBackFile(null), setBackPreview(null))
+                          }
+                          className="text-xs text-gray-500 hover:text-white transition-colors"
+                        >
+                          Re-upload
+                        </button>
+                      )}
+                    </div>
+
+                    {/* Locked back area (front not yet uploaded) */}
+                    {isBackLocked ? (
+                      <div
+                        className="rounded-2xl h-36 flex flex-col items-center justify-center gap-2 border-2 border-dashed border-[#2a2a2a]"
+                        style={{ background: 'rgba(255,255,255,0.02)' }}
+                      >
+                        <div className="text-2xl opacity-30">🔒</div>
+                        <p className="text-sm text-gray-600 text-center px-4">
+                          Upload &amp; crop the front first
+                        </p>
+                      </div>
+                    ) : (
+                      <div
+                        onDrop={(e) => handleDrop(e, side)}
+                        onDragOver={(e) => e.preventDefault()}
+                      >
+                        <label className="cursor-pointer block">
+                          <input
+                            type="file"
+                            accept="image/*"
+                            className="hidden"
+                            onChange={(e) => {
+                              const f = e.target.files?.[0]
+                              if (f) handleFile(f, side)
+                              e.target.value = ''
+                            }}
+                          />
+                          <div className={`border-2 border-dashed rounded-2xl flex items-center justify-center transition-all ${
+                            preview ? 'border-green-500/40 h-52' : 'border-[#2a2a2a] hover:border-[#7cc6ff]/40 hover:bg-[#7cc6ff]/5 h-36'
+                          }`}>
+                            {preview ? (
+                              // eslint-disable-next-line @next/next/no-img-element
+                              <img src={preview} alt={side} className="h-full w-full object-contain rounded-2xl p-2" />
+                            ) : (
+                              <div className="text-center">
+                                <div className="text-3xl mb-2">📸</div>
+                                <div className="text-sm text-gray-500">
+                                  Drag & drop or click to upload
+                                </div>
+                                <div className="text-xs text-gray-600 mt-1">JPG, PNG, WEBP — then crop</div>
+                              </div>
+                            )}
+                          </div>
+                        </label>
+                      </div>
+                    )}
                   </div>
                 )
               })}
             </div>
+
+            {/* Barrier: back image still needed */}
+            {frontPreview && !backPreview && (
+              <motion.div
+                initial={{ opacity: 0, y: 8 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="mb-4 px-4 py-4 rounded-xl flex items-start gap-3"
+                style={{
+                  background: 'rgba(124,198,255,0.06)',
+                  border: '1px solid rgba(124,198,255,0.2)',
+                }}
+              >
+                <div className="text-[#7cc6ff] text-lg mt-0.5">ℹ️</div>
+                <div>
+                  <div className="text-sm font-semibold text-[#7cc6ff] mb-0.5">Back image required</div>
+                  <div className="text-xs text-gray-400">
+                    Both front and back are required for an accurate PSA-style grade. Upload the back of your card above to continue.
+                  </div>
+                </div>
+              </motion.div>
+            )}
 
             {error && (
               <div className="mb-4 px-4 py-3 bg-[#e63946]/10 border border-[#e63946]/30 rounded-xl text-[#e63946] text-sm">
@@ -890,7 +960,7 @@ export default function GradePage() {
 
             <button
               onClick={handleSubmit}
-              disabled={!frontFile || loading}
+              disabled={!frontFile || !backFile || loading}
               className="w-full py-4 bg-[#e63946] hover:bg-[#c1121f] disabled:opacity-40 disabled:cursor-not-allowed text-white font-bold text-lg rounded-xl transition-all hover:shadow-[0_0_30px_rgba(230,57,70,0.4)]"
             >
               {loading ? (
@@ -901,9 +971,10 @@ export default function GradePage() {
                   </svg>
                   Analyzing card...
                 </span>
-              ) : (
-                '⚡ Grade This Card'
-              )}
+              ) : !frontFile ? '↑ Upload front image first'
+                : !backFile ? '↑ Upload back image to grade'
+                : '⚡ Grade This Card'
+              }
             </button>
 
             <p className="text-center text-xs text-gray-600 mt-4">
