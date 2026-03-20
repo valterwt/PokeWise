@@ -6,9 +6,10 @@ import { supabase } from '@/lib/supabase'
 
 interface AuthModalProps {
   onClose: () => void
+  onSuccess?: () => void
 }
 
-export default function AuthModal({ onClose }: AuthModalProps) {
+export default function AuthModal({ onClose, onSuccess }: AuthModalProps) {
   const { signIn, signUp } = useAuth()
   const [mode, setMode] = useState<'login' | 'signup' | 'reset'>('login')
   const [oauthLoading, setOauthLoading] = useState<'google' | 'discord' | null>(null)
@@ -38,7 +39,7 @@ export default function AuthModal({ onClose }: AuthModalProps) {
 
     if (mode === 'login') {
       const { error } = await signIn(email, password)
-      if (error) { setError(error) } else { onClose() }
+      if (error) { setError(error) } else { onSuccess ? onSuccess() : onClose() }
     } else if (mode === 'signup') {
       const { error } = await signUp(email, password)
       if (error) {
