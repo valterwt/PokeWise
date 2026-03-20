@@ -145,25 +145,46 @@ export default function GradePage() {
   const [saveError, setSaveError] = useState<string | null>(null)
   const [showAuthModal, setShowAuthModal] = useState(false)
 
-  const convertToJpeg = (file: File): Promise<File> =>
+  const MAX_BYTES = 1_048_576 // 1 MB — stays well under Next.js / Anthropic limits
+  const MAX_DIM   = 1500     // longest side in pixels
+
+  const prepareImage = (file: File): Promise<File> =>
     new Promise((resolve) => {
-      if (file.type === 'image/jpeg') { resolve(file); return }
       const img = new Image()
       const objectUrl = URL.createObjectURL(file)
       img.onload = () => {
+        // Scale down proportionally so the longest side ≤ MAX_DIM
+        let { naturalWidth: w, naturalHeight: h } = img
+        if (w > MAX_DIM || h > MAX_DIM) {
+          const scale = MAX_DIM / Math.max(w, h)
+          w = Math.round(w * scale)
+          h = Math.round(h * scale)
+        }
+
         const canvas = document.createElement('canvas')
-        canvas.width = img.naturalWidth
-        canvas.height = img.naturalHeight
-        canvas.getContext('2d')!.drawImage(img, 0, 0)
+        canvas.width  = w
+        canvas.height = h
+        canvas.getContext('2d')!.drawImage(img, 0, 0, w, h)
         URL.revokeObjectURL(objectUrl)
-        canvas.toBlob(
-          (blob) => resolve(new File([blob!], file.name.replace(/\.[^.]+$/, '.jpg'), { type: 'image/jpeg' })),
-          'image/jpeg',
-          0.92,
-        )
+
+        // Try decreasing quality until file fits within MAX_BYTES
+        const tryQuality = (quality: number) => {
+          canvas.toBlob((blob) => {
+            if (!blob) { resolve(file); return }
+            if (blob.size <= MAX_BYTES || quality <= 0.4) {
+              resolve(new File([blob], file.name.replace(/\.[^.]+$/, '.jpg'), { type: 'image/jpeg' }))
+            } else {
+              tryQuality(Math.max(quality - 0.1, 0.4))
+            }
+          }, 'image/jpeg', quality)
+        }
+        tryQuality(0.85)
       }
       img.src = objectUrl
     })
+
+  // Keep the old name so nothing else needs to change
+  const convertToJpeg = prepareImage
 
   const handleFile = useCallback(async (file: File, side: 'front' | 'back') => {
     const jpeg = await convertToJpeg(file)
