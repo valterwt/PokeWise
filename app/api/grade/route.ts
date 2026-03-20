@@ -143,8 +143,11 @@ A PSA grade of 1 (Poor/Authentic) is a legitimate grade — it means the card is
  2 — Good: Major creases visible, staining, very heavy corner rounding (not ripped or torn).
  1 — Poor/Authentic: Structural damage — ripped corners, torn edges, missing pieces. Card is identifiable but damaged beyond normal wear.
 
+Also identify the card from the image. Look for the card name, set number, and set name printed on the card.
+
 Return ONLY a valid JSON object with no additional text:
 {
+  "card_name": "<full card name including set number and set name, e.g. 'Charizard (4/102) - Base Set' or 'Gold Star Metagross (113/113) - EX Delta Species'>",
   "grade": <number 1-10, can be .5 increments>,
   "centering": <number 1-10>,
   "corners": <number 1-10>,

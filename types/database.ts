@@ -66,4 +66,5 @@ export type GradeResult = {
   surface: number
   summary: string
   recommendation: string
+  card_name?: string
 }

@@ -43,9 +43,10 @@ function gradeLabel(grade: number): string {
   return 'Poor'
 }
 
-function displayName(cardName: string, grade: number | null | undefined): string {
+function displayName(cardName: string, grade: number | null | undefined, showGrade = false): string {
   const name = cardName?.trim()
-  if (name && name.toLowerCase() !== 'unknown card') return name
+  const hasName = name && name.toLowerCase() !== 'unknown card'
+  if (hasName) return showGrade && grade != null ? `${name} · ${grade.toFixed(1)}` : name
   if (grade != null && grade > 0) return `${gradeLabel(grade)} · ${grade.toFixed(1)}`
   return 'Graded Card'
 }
@@ -140,7 +141,7 @@ function CardDetailModal({ card, onClose }: { card: CardRow; onClose: () => void
         <div className="p-6 space-y-5">
           {/* Header */}
           <div>
-            <h2 className="text-lg font-black mb-0.5">{displayName(card.card_name, grade)}</h2>
+            <h2 className="text-lg font-black mb-0.5">{displayName(card.card_name, grade, true)}</h2>
             <div className="text-xs text-gray-500">
               Graded {new Date(card.created_at).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}
             </div>
@@ -247,7 +248,7 @@ function BinderCard({ card, index }: { card: CardRow; index: number }) {
 
         {/* Card info */}
         <div className="p-4">
-          <h3 className="font-bold text-sm mb-1 truncate">{displayName(card.card_name, grade)}</h3>
+          <h3 className="font-bold text-sm mb-1 truncate">{displayName(card.card_name, grade, true)}</h3>
           <div className="text-xs text-gray-500">
             {new Date(card.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
           </div>

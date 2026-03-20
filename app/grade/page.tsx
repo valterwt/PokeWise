@@ -614,7 +614,12 @@ export default function GradePage() {
         return
       }
       if (!res.ok) throw new Error(data.error || 'Grading failed')
-      setGradeResult(data as GradeResult)
+      const result = data as GradeResult
+      setGradeResult(result)
+      // Auto-fill card name from AI identification if user left field blank
+      if (!cardName.trim() && result.card_name) {
+        setCardName(result.card_name)
+      }
       setStep('animating')
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Something went wrong')
@@ -650,7 +655,7 @@ export default function GradePage() {
       const fd = new FormData()
       fd.append('front', frontFile)
       if (backFile) fd.append('back', backFile)
-      fd.append('cardName', cardName || 'Unknown Card')
+      fd.append('cardName', cardName.trim() || gradeResult.card_name || 'Unknown Card')
       fd.append('grade', String(gradeResult.grade))
       fd.append('centering', String(gradeResult.centering))
       fd.append('corners', String(gradeResult.corners))
