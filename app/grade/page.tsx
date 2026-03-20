@@ -305,12 +305,11 @@ function GradeVaultSlab({
           <div className="text-center font-mono text-[7px] text-white/30 tracking-widest">{serial}</div>
         </div>
 
-        {/* === CARD ART WINDOW (cropped to Pokemon artwork) === */}
+        {/* === CARD IMAGE WINDOW — shows full cropped image === */}
         <div
           className="relative rounded-b-lg overflow-hidden"
           style={{
-            /* Square-ish window so artwork fills it; object-position crops to art area */
-            aspectRatio: '1 / 1',
+            aspectRatio: '2.5 / 3.5',
             background: '#040508',
             border: '1px solid rgba(255,255,255,0.04)',
           }}
@@ -318,14 +317,13 @@ function GradeVaultSlab({
           {frontPreview ? (
             <motion.img
               src={frontPreview}
-              alt="Card art"
+              alt="Card"
               className="absolute inset-0 w-full h-full"
               style={{
-                objectFit: 'cover',
-                /* Center of the image positioned at ~20% from the top so we see the art box, not the card text */
-                objectPosition: 'center 20%',
+                objectFit: 'contain',
+                objectPosition: 'center',
               }}
-              initial={{ opacity: 0, scale: 1.08 }}
+              initial={{ opacity: 0, scale: 1.05 }}
               animate={{ opacity: 1, scale: 1 }}
               transition={{ duration: 0.6, ease: 'easeOut' }}
             />

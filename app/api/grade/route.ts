@@ -123,6 +123,15 @@ export async function POST(req: NextRequest) {
               text: `You are a professional Pokémon card grader. ${cardNote}
 Analyze the provided card image(s) and grade it on a 1-10 scale using PSA-style criteria.
 
+GRADE 1 CALIBRATION STANDARD (lowest possible score):
+A grade of 1 (Poor/Authentic) is the absolute floor and must be assigned whenever ANY of the following are present:
+- Ripped, torn, or physically broken corners
+- Torn or missing sections of the card (edges, surface, text area)
+- Structural damage where the card is split, bent severely, or punched through
+- Severe water damage causing warping or ink bleed across the full card
+- Cards that are barely identifiable as the original card
+Do NOT grade above 1.0 if the card shows ripped or torn corners/edges. This is a hard rule.
+
 Grade criteria:
 - 10 (Gem Mint): Perfect in every way
 - 9 (Mint): Only the slightest imperfection allowed
@@ -132,8 +141,8 @@ Grade criteria:
 - 5 (Excellent): Multiple light scratches, minor chipping
 - 4 (Very Good–Excellent): Noticeable wear, some whitening
 - 3 (Very Good): Heavy wear on edges, surface scratches
-- 2 (Good): Major creases, stains, rounded corners
-- 1 (Poor): Heavily damaged, torn, missing pieces
+- 2 (Good): Major creases, stains, heavily rounded corners (not ripped)
+- 1 (Poor): Ripped/torn corners or edges, missing pieces, structural damage — WORST CONDITION
 
 Return ONLY a valid JSON object with no additional text:
 {
