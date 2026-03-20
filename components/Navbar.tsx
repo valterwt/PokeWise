@@ -18,7 +18,6 @@ const navLinks = [
   { href: '/binder', label: 'My Binder' },
   { href: '/leaderboards', label: 'Leaderboards' },
   { href: '/newsletter', label: 'Restoration' },
-  { href: '/campaign', label: 'Campaign' },
   { href: '/pricing', label: 'Pricing' },
 ]
 

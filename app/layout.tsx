@@ -4,6 +4,7 @@ import Navbar from "@/components/Navbar"
 import Footer from "@/components/Footer"
 import CardSpritesBg from "@/components/CardSpritesBg"
 import Providers from "@/components/Providers"
+import CookieConsent from "@/components/CookieConsent"
 
 export const metadata: Metadata = {
   title: "GradeVault — AI TCG Card Grading",
@@ -33,6 +34,7 @@ export default function RootLayout({
             </main>
             <Footer />
           </div>
+          <CookieConsent />
         </Providers>
       </body>
     </html>

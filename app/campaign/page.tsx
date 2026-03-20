@@ -2,6 +2,9 @@
 
 import { useState } from 'react'
 import { motion } from 'framer-motion'
+import { useAuth } from '@/lib/auth-context'
+
+const ADMIN_EMAIL = process.env.NEXT_PUBLIC_ADMIN_EMAIL
 
 const scripts = [
   {
@@ -143,9 +146,32 @@ const schedule = [
 type Tab = 'scripts' | 'style' | 'schedule'
 
 export default function CampaignPage() {
+  const { user, loading } = useAuth()
   const [activeTab, setActiveTab] = useState<Tab>('scripts')
   const [expanded, setExpanded] = useState<string | null>('1')
   const [copied, setCopied] = useState<string | null>(null)
+
+  const isAdmin = ADMIN_EMAIL ? user?.email === ADMIN_EMAIL : !!user
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="w-6 h-6 border-2 rounded-full animate-spin" style={{ borderColor: '#7cc6ff', borderTopColor: 'transparent' }} />
+      </div>
+    )
+  }
+
+  if (!isAdmin) {
+    return (
+      <div className="min-h-screen flex items-center justify-center px-4">
+        <div className="text-center">
+          <div className="text-5xl mb-4">🔒</div>
+          <h1 className="text-2xl font-black mb-2">Access Restricted</h1>
+          <p style={{ color: '#9fb0ff' }} className="text-sm">This page is only available to the development team.</p>
+        </div>
+      </div>
+    )
+  }
 
   const copyScript = (id: string, text: string) => {
     navigator.clipboard.writeText(text)
