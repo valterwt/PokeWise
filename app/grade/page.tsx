@@ -145,19 +145,40 @@ export default function GradePage() {
   const [saveError, setSaveError] = useState<string | null>(null)
   const [showAuthModal, setShowAuthModal] = useState(false)
 
-  const handleFile = useCallback((file: File, side: 'front' | 'back') => {
+  const convertToJpeg = (file: File): Promise<File> =>
+    new Promise((resolve) => {
+      if (file.type === 'image/jpeg') { resolve(file); return }
+      const img = new Image()
+      const objectUrl = URL.createObjectURL(file)
+      img.onload = () => {
+        const canvas = document.createElement('canvas')
+        canvas.width = img.naturalWidth
+        canvas.height = img.naturalHeight
+        canvas.getContext('2d')!.drawImage(img, 0, 0)
+        URL.revokeObjectURL(objectUrl)
+        canvas.toBlob(
+          (blob) => resolve(new File([blob!], file.name.replace(/\.[^.]+$/, '.jpg'), { type: 'image/jpeg' })),
+          'image/jpeg',
+          0.92,
+        )
+      }
+      img.src = objectUrl
+    })
+
+  const handleFile = useCallback(async (file: File, side: 'front' | 'back') => {
+    const jpeg = await convertToJpeg(file)
     const reader = new FileReader()
     reader.onload = (e) => {
       const url = e.target?.result as string
       if (side === 'front') {
-        setFrontFile(file)
+        setFrontFile(jpeg)
         setFrontPreview(url)
       } else {
-        setBackFile(file)
+        setBackFile(jpeg)
         setBackPreview(url)
       }
     }
-    reader.readAsDataURL(file)
+    reader.readAsDataURL(jpeg)
   }, [])
 
   const handleDrop = useCallback((e: React.DragEvent, side: 'front' | 'back') => {
@@ -181,7 +202,13 @@ export default function GradePage() {
 
     try {
       const res = await fetch('/api/grade', { method: 'POST', body: formData })
-      const data = await res.json()
+      let data: (GradeResult & { error?: string }) | { error?: string } = {}
+      try {
+        data = await res.json()
+      } catch {
+        if (res.status === 413) throw new Error('Image is too large. Please upload a smaller file.')
+        throw new Error(`Server error (${res.status})`)
+      }
       if (res.status === 401) {
         setShowAuthModal(true)
         return
@@ -191,7 +218,7 @@ export default function GradePage() {
         return
       }
       if (!res.ok) throw new Error(data.error || 'Grading failed')
-      setGradeResult(data)
+      setGradeResult(data as GradeResult)
       setStep('animating')
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Something went wrong')
@@ -394,7 +421,8 @@ export default function GradePage() {
             </button>
 
             <p className="text-center text-xs text-gray-600 mt-4">
-              Your card images are analyzed by Claude AI and not stored without your permission.
+              Your card images are analyzed by Claude AI and not stored without your permission.{' '}
+              <a href="/ai-disclosure" className="underline hover:text-gray-400 transition-colors">AI disclosure</a>
             </p>
           </motion.div>
         )}
