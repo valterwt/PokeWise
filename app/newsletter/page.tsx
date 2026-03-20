@@ -5,6 +5,28 @@ import { motion } from 'framer-motion'
 
 const newsletterPosts = [
   {
+    id: '4',
+    title: 'Week 4 — Double Feature: Sceptile Gold Star + Metagross Gold Star',
+    body: `Two Gold Stars in one week — neither was in submittable condition. This is the most ambitious restoration session we have run so far.
+
+The Sceptile Gold Star arrived with heavy edge whitening along the left and bottom edges, plus a crease running diagonally from the top-right corner. Surface was clean. The plan: humidity chamber for the crease, followed by a weighted press, then edge treatment.
+
+Results on the Sceptile: the crease reduced from a hard fold to a hairline — visible under direct light, nearly invisible at normal viewing angle. Edge whitening dropped by roughly 60%. AI grade moved from 2.9 to 5.4. Not a PSA 9, but the card is now a viable raw collector copy.
+
+The Metagross Gold Star was a different challenge — no crease, but deep surface scratches on the holo pattern. This is the hardest category to restore. We attempted a micro-abrasive technique using a jeweller's polishing cloth with light circular pressure.
+
+Results on the Metagross: mixed. Shallow scratches improved noticeably. The two deepest scratches remain untouched. AI grade moved from 3.1 to 4.0. The surface is better but still shows damage under harsh light.
+
+Key lesson from this week: edge and crease restoration is highly repeatable and predictable. Surface scratch restoration is not. The same technique produces inconsistent results depending on scratch depth. We will continue refining the surface work, but our recommendation for now is to never attempt it on cards worth more than raw market value — the risk/reward is too tight.
+
+Next week: we are attempting our first resubmission to PSA with the restored Sceptile to see if the jump in AI grade translates to an actual PSA grade improvement.`,
+    before_image_url: null,
+    after_image_url: null,
+    published_at: new Date().toISOString(),
+    tags: ['restoration', 'success', 'gold-star'],
+    readTime: '5 min read',
+  },
+  {
     id: '3',
     title: 'Week 3 — Failure Report: Acetone Attempt Gone Wrong',
     body: `Honest failure report this week. We attempted to use diluted acetone to remove a stubborn sticker residue from a 1st Edition Venusaur surface. The result was immediate surface damage — the acetone stripped part of the card's finish and left a dull patch.
@@ -59,7 +81,7 @@ export default function NewsletterPage() {
   const [subscribed, setSubscribed] = useState(false)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
-  const [expanded, setExpanded] = useState<string | null>('3')
+  const [expanded, setExpanded] = useState<string | null>('4')
 
   const handleSubscribe = async (e: React.FormEvent) => {
     e.preventDefault()
